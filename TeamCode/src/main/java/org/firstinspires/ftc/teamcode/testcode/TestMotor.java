@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.testcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /*
@@ -8,48 +9,53 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 */
 public class TestMotor extends TestItem
 {
-   private double testSpeed;
+   private double testMotorPower;
    private DcMotor testMotor;
+   private Telemetry testTelemetry;
+   private double motorPower;
+   private boolean runTest;
 
    /**
     * <p>Class used for adding a DcMotor as a testable item</p>
     * @param description Label shown on display
     * @param motor DcMotor object to test
-    * @param speed Motor power command for test
-    * @return none
     */
-   public TestMotor(String description, DcMotor motor, double speed)
+   public TestMotor(String description, DcMotor motor)
    {
       super(description);
       testMotor = motor;
-      testSpeed = speed;
    }
 
    /**
     * <p>Class defining actions to perform during test</p>
     * @param runTest If true, selected test begins
     * @param telemetry Telemetry object to display on driver station during test
-    * @return none
+    * @param gamepad Gamepad currently in use for test, allowing for additional control of test hardware
     */
    @Override
-   public void run(boolean runTest, Telemetry telemetry)
+   public void run(boolean runTest, Telemetry telemetry, Gamepad gamepad)
    {
-      if (runTest)
-      {
-         testMotor.setPower(testSpeed);
+      this.motorPower = -gamepad.left_stick_y;
+      this.runTest = gamepad.a;
+      this.testTelemetry = telemetry;
+
+      // During test, left y-joystick used to proportionally control motor
+      if (runTest) {
+         testMotor.setPower(this.motorPower);
       }
-      else
-      {
+      else {
          testMotor.setPower(0.0);
       }
 
-      // Add DcMotor values of interest here
-      telemetry.addData("Motor Power:", testMotor.getPower());
+      updateTestTelemetry(telemetry);
+   }
 
-      // If using encoders add to telemetry
-      if (testMotor.getMode() == DcMotor.RunMode.RUN_USING_ENCODER)
-      {
-         telemetry.addData("Encoder: ", testMotor.getCurrentPosition());
-      }
+   /**
+    * <p>Output test telemetry to driver station</p>
+    */
+   private void updateTestTelemetry(Telemetry telemetry) {
+      testTelemetry.addData("Run Test:", this.runTest);
+      testTelemetry.addData("Motor Power:", this.motorPower);
+      testTelemetry.addData("Encoder Count: ", testMotor.getCurrentPosition());
    }
 }

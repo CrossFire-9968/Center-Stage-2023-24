@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.testcode;
 
+import com.qualcomm.robotcore.hardware.Gamepad;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /*
@@ -21,5 +23,5 @@ abstract public class TestItem
       return this.description;
    }
 
-   abstract public void run(boolean runTest, Telemetry testTelemetry);
+   abstract public void run(boolean runTest, Telemetry testTelemetry, Gamepad gamepad);
 }
