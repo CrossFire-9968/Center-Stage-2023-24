@@ -5,13 +5,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-@TeleOp()
-public class DriveTester extends OpMode {
+@TeleOp(name="Robot TeleOp")
+public class RobotControl extends OpMode {
     private DcMotor MotorLRear;
     private DcMotor MotorRRear;
     private DcMotor MotorLFront;
     private DcMotor MotorRFront;
-    double speedForward;
+    double driveSpeed;
 
     @Override
     public void init( ) {
@@ -28,15 +28,9 @@ public class DriveTester extends OpMode {
 
     @Override
     public void loop() {
-        speedForward = -gamepad1.left_stick_y ;
-        MotorLRear.setPower(speedForward);
-        MotorRRear.setPower(speedForward);
-        MotorLFront.setPower(speedForward);
-        MotorRFront.setPower(speedForward);
-        telemetry.addData("speed Forward", speedForward);
+        driveSpeed = -gamepad1.left_stick_y;
+        telemetry.addData("speed Forward", driveSpeed);
         telemetry.update();
-
-
     }
 }
 
