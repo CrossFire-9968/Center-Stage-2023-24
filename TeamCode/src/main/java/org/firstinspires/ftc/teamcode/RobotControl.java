@@ -13,6 +13,7 @@ public class RobotControl extends OpMode {
     private DcMotor MotorRFront;
     double driveSpeed;
     double turnSpeed;
+    double strafeSpeed;
 
     @Override
     public void init( ) {
@@ -31,14 +32,11 @@ public class RobotControl extends OpMode {
         MotorRFront = hardwareMap.get(DcMotor.class, "MotorRFront");
         MotorRFront.setDirection(DcMotorSimple.Direction.FORWARD);
         MotorRFront.setPower(0.0);
-
-
-
     }
-
 
     @Override
     public void loop() {
+        strafeSpeed = gamepad1.left_stick_x;
         turnSpeed = gamepad1.right_stick_x;
         driveSpeed = -gamepad1.left_stick_y;
         MotorRFront.setPower(driveSpeed);
@@ -50,6 +48,11 @@ public class RobotControl extends OpMode {
         MotorLFront.setPower(turnSpeed);
         MotorRRear.setPower(-turnSpeed);
         MotorLRear.setPower(turnSpeed);
+
+        MotorRFront.setPower(-strafeSpeed);
+        MotorLFront.setPower(strafeSpeed);
+        MotorRRear.setPower(strafeSpeed);
+        MotorLRear.setPower(-strafeSpeed);
 
         telemetry.addData("speed Forward", driveSpeed);
         telemetry.update();
