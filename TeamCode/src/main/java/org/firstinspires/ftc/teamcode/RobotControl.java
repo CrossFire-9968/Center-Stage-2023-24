@@ -39,6 +39,12 @@ public class RobotControl extends OpMode {
         strafeSpeed = gamepad1.left_stick_x;
         turnSpeed = gamepad1.right_stick_x;
         driveSpeed = -gamepad1.left_stick_y;
+
+        double RFrontPower = driveSpeed - turnSpeed - strafeSpeed;
+        double LFrontPower = driveSpeed + turnSpeed + strafeSpeed;
+        double RRearPower = driveSpeed - turnSpeed + strafeSpeed;
+        double LRearPower = driveSpeed + turnSpeed - strafeSpeed;
+
         MotorRFront.setPower(driveSpeed);
         MotorLFront.setPower(driveSpeed);
         MotorRRear.setPower(driveSpeed);
