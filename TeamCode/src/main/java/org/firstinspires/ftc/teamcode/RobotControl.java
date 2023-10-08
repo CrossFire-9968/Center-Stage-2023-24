@@ -36,6 +36,10 @@ public class RobotControl extends OpMode {
 
     @Override
     public void loop() {
+        Drive();
+    }
+
+    public void Drive() {
         strafeSpeed = gamepad1.left_stick_x;
         turnSpeed = gamepad1.right_stick_x;
         driveSpeed = -gamepad1.left_stick_y;
@@ -45,20 +49,10 @@ public class RobotControl extends OpMode {
         double RRearPower = driveSpeed - turnSpeed + strafeSpeed;
         double LRearPower = driveSpeed + turnSpeed - strafeSpeed;
 
-        MotorRFront.setPower(driveSpeed);
-        MotorLFront.setPower(driveSpeed);
-        MotorRRear.setPower(driveSpeed);
-        MotorLRear.setPower(driveSpeed);
-
-        MotorRFront.setPower(-turnSpeed);
-        MotorLFront.setPower(turnSpeed);
-        MotorRRear.setPower(-turnSpeed);
-        MotorLRear.setPower(turnSpeed);
-
-        MotorRFront.setPower(-strafeSpeed);
-        MotorLFront.setPower(strafeSpeed);
-        MotorRRear.setPower(strafeSpeed);
-        MotorLRear.setPower(-strafeSpeed);
+        MotorRFront.setPower(RFrontPower);
+        MotorLFront.setPower(LFrontPower);
+        MotorRRear.setPower(RRearPower);
+        MotorLRear.setPower(LRearPower);
 
         telemetry.addData("speed Forward", driveSpeed);
         telemetry.update();
