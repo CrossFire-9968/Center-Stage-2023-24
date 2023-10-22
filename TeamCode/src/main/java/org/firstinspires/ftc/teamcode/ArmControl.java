@@ -16,8 +16,9 @@ public class ArmControl {
         ArmMotor.setPower(0.0);
         ArmMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         ArmMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-}
+    }
 
     public void drive() {
         telemetry.addData("Arm Position:", ArmMotor.getCurrentPosition());
     }
+}
