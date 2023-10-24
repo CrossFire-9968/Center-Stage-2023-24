@@ -1,80 +1,90 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.gamepad1;
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
-
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class MecanumDrive {
-    private DcMotor MotorLRear;
-    private DcMotor MotorRRear;
-    private DcMotor MotorLFront;
-    private DcMotor MotorRFront;
-    double driveSpeed;
-    double turnSpeed;
-    double strafeSpeed;
-    double driveSensitivity;
-    public void init() {
-        MotorLRear = hardwareMap.get(DcMotor.class, "MotorLRear");
-        MotorLRear.setDirection(DcMotorSimple.Direction.FORWARD);
-        MotorLRear.setPower(0.0);
+    public DcMotor motor_LR;
+    public DcMotor motor_RR;
+    public DcMotor motor_LF;
+    public DcMotor motor_RF;
+    double LFrontPower;
+    double RFrontPower;
+    double RRearPower;
+    double LRearPower;
+    final double driveSensitivity = 0.7;
 
-        MotorRRear = hardwareMap.get(DcMotor.class, "MotorRRear");
-        MotorRRear.setDirection(DcMotorSimple.Direction.REVERSE);
-        MotorRRear.setPower(0.0);
 
-        MotorLFront = hardwareMap.get(DcMotor.class, "MotorLFront");
-        MotorLFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        MotorLFront.setPower(0.0);
+    public void init(HardwareMap hwMap) {
+        motor_LF = hwMap.get(DcMotor.class, "Motor_LF");
+        motor_LF.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        MotorRFront = hardwareMap.get(DcMotor.class, "MotorRFront");
-        MotorRFront.setDirection(DcMotorSimple.Direction.FORWARD);
-        MotorRFront.setPower(0.0);
+        motor_RF = hwMap.get(DcMotor.class, "Motor_RF");
+        motor_RF.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        motor_RR = hwMap.get(DcMotor.class, "Motor_RR");
+        motor_RR.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        motor_LR = hwMap.get(DcMotor.class, "Motor_LR");
+        motor_LR.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        setMecanumPowers(0.0);
     }
 
-    public void drive() {
-        driveSensitivity = 0.7;
-        strafeSpeed = gamepad1.left_stick_x;
-        turnSpeed = gamepad1.right_stick_x;
-        driveSpeed = -gamepad1.left_stick_y;
 
-        double RFrontPower = driveSpeed - turnSpeed - strafeSpeed;
-        double LFrontPower = driveSpeed + turnSpeed + strafeSpeed;
-        double RRearPower = driveSpeed - turnSpeed + strafeSpeed;
-        double LRearPower = driveSpeed + turnSpeed - strafeSpeed;
+    public void manualDrive(Gamepad gamepad, Telemetry telemetry) {
+        double strafeSpeed = gamepad.left_stick_x;
+        double turnSpeed = gamepad.right_stick_x;
+        double driveSpeed = gamepad.left_stick_y;
 
-        double RFrontPowerSq = Math.pow(RFrontPower, 3)  * driveSensitivity;
-        double LFrontPowerSq = Math.pow(LFrontPower, 3)  * driveSensitivity;
-        double RRearPowerSq = Math.pow(RRearPower, 3)  * driveSensitivity;
-        double LRearPowerSq = Math.pow(LRearPower, 3)  * driveSensitivity;
+        // Raw drive power for each motor from joystick inputs
+        LFrontPower = driveSpeed - turnSpeed - strafeSpeed;
+        RFrontPower = driveSpeed + turnSpeed + strafeSpeed;
+        RRearPower = driveSpeed + turnSpeed - strafeSpeed;
+        LRearPower = driveSpeed - turnSpeed + strafeSpeed;
 
-        double maxPowerSq = driveSensitivity;
+//        // Cubing power values to give finer control at slow speeds
+        LFrontPower = Math.pow(LFrontPower, 3);
+        RFrontPower = Math.pow(RFrontPower, 3);
+        RRearPower = Math.pow(RRearPower, 3);
+        LRearPower = Math.pow(LRearPower, 3);
 
-        if (RFrontPowerSq > maxPowerSq){
-            maxPowerSq = RFrontPowerSq;
-        }
-        if (LFrontPowerSq > maxPowerSq){
-            maxPowerSq = LFrontPowerSq;
-        }
-        if (RRearPowerSq > maxPowerSq){
-            maxPowerSq = RRearPowerSq;
-        }
-        if (LRearPowerSq > maxPowerSq){
-            maxPowerSq = LRearPowerSq;
-        }
+        // Find max drive power
+        double max = 1.0;
+        max = Math.max(max, Math.abs(LFrontPower));
+        max = Math.max(max, Math.abs(RFrontPower));
+        max = Math.max(max, Math.abs(RRearPower));
+        max = Math.max(max, Math.abs(LRearPower));
 
-        RFrontPower = (RFrontPowerSq / maxPowerSq);
-        LFrontPower = (LFrontPowerSq / maxPowerSq);
-        RRearPower =  (RRearPowerSq / maxPowerSq);
-        LRearPower =  (LRearPowerSq / maxPowerSq);
+        // Ratio drive powers
+        LFrontPower = (LFrontPower / max);
+        RFrontPower = (RFrontPower / max);
+        RRearPower =  (RRearPower / max);
+        LRearPower =  (LRearPower / max);
 
-        MotorRFront.setPower(RFrontPower);
-        MotorLFront.setPower(LFrontPower);
-        MotorRRear.setPower(RRearPower);
-        MotorLRear.setPower(LRearPower);
+        telemetry.addData("Max: ", max);
 
-        telemetry.addData("MaxPowerSq:", maxPowerSq);
+        // Set motor speed
+        setMecanumPowers(LFrontPower, RFrontPower, RRearPower, LRearPower);
+    }
+
+    // Set all mecanum powers
+    protected void setMecanumPowers(double power) {
+        motor_LF.setPower(power);
+        motor_RF.setPower(power);
+        motor_RR.setPower(power);
+        motor_LR.setPower(power);
+    }
+
+
+    protected void setMecanumPowers(double LFpower, double RFpower, double RRpower, double LRpower) {
+        motor_LF.setPower(driveSensitivity * LFpower);
+        motor_RF.setPower(driveSensitivity * RFpower);
+        motor_RR.setPower(driveSensitivity * RRpower);
+        motor_LR.setPower(driveSensitivity * LRpower);
     }
 }
