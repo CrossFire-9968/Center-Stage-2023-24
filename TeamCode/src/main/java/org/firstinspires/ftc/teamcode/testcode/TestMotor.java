@@ -35,7 +35,7 @@ public class TestMotor extends TestItem
    @Override
    public void run(boolean runTest, Telemetry telemetry, Gamepad gamepad)
    {
-      this.motorPower = -gamepad.left_stick_y;
+      this.motorPower = gamepad.left_stick_y;
       this.runTest = gamepad.a;
       this.testTelemetry = telemetry;
 
