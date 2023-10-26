@@ -8,31 +8,31 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 public class MecanumDrive {
-    private DcMotor MotorLRear;
-    private DcMotor MotorRRear;
-    private DcMotor MotorLFront;
-    private DcMotor MotorRFront;
+    private DcMotor motor_LR = null;
+    private DcMotor motor_RR = null;
+    private DcMotor motor_LF = null;
+    private DcMotor motor_RF = null;
     double driveSpeed;
     double turnSpeed;
     double strafeSpeed;
     double driveSensitivity;
 
     public void init() {
-        MotorLRear = hardwareMap.get(DcMotor.class, "MotorLRear");
-        MotorLRear.setDirection(DcMotorSimple.Direction.FORWARD);
-        MotorLRear.setPower(0.0);
+        motor_LR = hardwareMap.get(DcMotor.class, "MotorLR");
+        motor_LR.setDirection(DcMotorSimple.Direction.FORWARD);
+        motor_LR.setPower(0.0);
 
-        MotorRRear = hardwareMap.get(DcMotor.class, "MotorRRear");
-        MotorRRear.setDirection(DcMotorSimple.Direction.REVERSE);
-        MotorRRear.setPower(0.0);
+        motor_RR = hardwareMap.get(DcMotor.class, "MotorRRear");
+        motor_RR.setDirection(DcMotorSimple.Direction.REVERSE);
+        motor_RR.setPower(0.0);
 
-        MotorLFront = hardwareMap.get(DcMotor.class, "MotorLFront");
-        MotorLFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        MotorLFront.setPower(0.0);
+        motor_LF = hardwareMap.get(DcMotor.class, "MotorLFront");
+        motor_LF.setDirection(DcMotorSimple.Direction.REVERSE);
+        motor_LF.setPower(0.0);
 
-        MotorRFront = hardwareMap.get(DcMotor.class, "MotorRFront");
-        MotorRFront.setDirection(DcMotorSimple.Direction.FORWARD);
-        MotorRFront.setPower(0.0);
+        motor_RF = hardwareMap.get(DcMotor.class, "MotorRFront");
+        motor_RF.setDirection(DcMotorSimple.Direction.FORWARD);
+        motor_RF.setPower(0.0);
     }
 
     public void drive() {
@@ -71,10 +71,10 @@ public class MecanumDrive {
         RRearPower =  (RRearPowerSq / maxPowerSq);
         LRearPower =  (LRearPowerSq / maxPowerSq);
 
-        MotorRFront.setPower(RFrontPower);
-        MotorLFront.setPower(LFrontPower);
-        MotorRRear.setPower(RRearPower);
-        MotorLRear.setPower(LRearPower);
+        motor_RF.setPower(RFrontPower);
+        motor_LF.setPower(LFrontPower);
+        motor_RR.setPower(RRearPower);
+        motor_LR.setPower(LRearPower);
 
         telemetry.addData("MaxPowerSq:", maxPowerSq);
     }
