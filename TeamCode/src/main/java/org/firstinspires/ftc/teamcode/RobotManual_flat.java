@@ -15,6 +15,7 @@ public class RobotManual_flat extends OpMode {
     public DcMotor motor_RR;
     public DcMotor motor_LF;
     public DcMotor motor_RF;
+    public DcMotor pixel_Motor;
     double LFrontPower;
     double RFrontPower;
     double RRearPower;
@@ -36,8 +37,12 @@ public class RobotManual_flat extends OpMode {
         motor_LR = hardwareMap.get(DcMotor.class, "Motor_LR");
         motor_LR.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        pixel_Motor = hardwareMap.get(DcMotor.class, "pixel_Motor");
+        pixel_Motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
         setAllMecanumPowers(0.0);
-        
+        pixel_Motor.setPower(0.0);
+
         telemetry.addLine("Begin initializations");
         telemetry.addLine("... Mecanum init complete");
         telemetry.addLine("End initializations");
@@ -47,8 +52,25 @@ public class RobotManual_flat extends OpMode {
     public void loop() {
         manualDrive();
 
+        double armSpeedUp = 0.2;
+        double armSpeedDown = 0.1;
+        if (gamepad2.dpad_down) {
+            pixel_Motor.setPower(armSpeedDown);
+            pixel_Motor.setTargetPosition(0);
+            pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            telemetry.addLine("Moving Down");
+
+        }
+        if (gamepad2.dpad_up) {
+            pixel_Motor.setPower(armSpeedUp);
+            pixel_Motor.setTargetPosition(750);
+            pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            telemetry.addLine("Moving Up");
+        }
+
         telemetry.update();
     }
+
 
 
     public void manualDrive() {
