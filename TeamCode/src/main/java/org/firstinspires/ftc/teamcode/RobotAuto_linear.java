@@ -1,0 +1,144 @@
+package org.firstinspires.ftc.teamcode;
+
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+
+@Autonomous(name="Robot Auto Linear")
+public class RobotAuto_linear extends LinearOpMode
+{
+    public DcMotor motor_LR;
+    public DcMotor motor_RR;
+    public DcMotor motor_LF;
+    public DcMotor motor_RF;
+    double LFrontPower;
+    double RFrontPower;
+    double RRearPower;
+    double LRearPower;
+    final double driveSensitivity = 0.7;
+
+
+    @Override
+    public void runOpMode() throws InterruptedException
+    {
+        // Declare any local / helper variables here
+        // Our initialization code should go here before calling "WaitForStart()"
+
+        motor_LF = hardwareMap.get(DcMotor.class, "Motor_LF");
+        motor_LF.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        motor_RF = hardwareMap.get(DcMotor.class, "Motor_RF");
+        motor_RF.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        motor_RR = hardwareMap.get(DcMotor.class, "Motor_RR");
+        motor_RR.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        motor_LR = hardwareMap.get(DcMotor.class, "Motor_LR");
+        motor_LR.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        setMecanumPowers(0.0);
+
+        // Wait for the game to start (driver presses PLAY)
+        waitForStart();
+
+        // Run this code while Autonomous has not timed out
+        while (opModeIsActive()) {
+            drive(0.5, 1000);
+
+            while(!isMotionComplete()){
+                idle();
+            }
+        }
+    }
+
+
+    public void drive(double power, int distance) {
+        stopAndResetEncoders();
+        setMecanumPowers(power);
+        setTargetPosition(distance);
+        runToPosition();
+    }
+
+
+    public void strafe (double power, int distance)
+    {
+        stopAndResetEncoders();
+        setMecanumPowers(power, -power, power, -power);
+        setTargetPosition(distance);
+        runToPosition();
+    }
+
+
+    public void rotate (double power, int distance) {
+        stopAndResetEncoders();
+        setMecanumPowers(power, -power, -power, power);
+        setTargetPosition(distance);
+        runToPosition();
+    }
+
+
+    // Set all mecanum powers
+    protected void setMecanumPowers(double power) {
+        motor_LF.setPower(power);
+        motor_RF.setPower(power);
+        motor_RR.setPower(power);
+        motor_LR.setPower(power);
+    }
+
+
+    protected void setMecanumPowers(double LFpower, double RFpower, double RRpower, double LRpower) {
+        motor_LF.setPower(driveSensitivity * LFpower);
+        motor_RF.setPower(driveSensitivity * RFpower);
+        motor_RR.setPower(driveSensitivity * RRpower);
+        motor_LR.setPower(driveSensitivity * LRpower);
+    }
+
+
+    // Drive until one of the 4 wheels has reached it's target position. We only wait for one
+    // because it is not guaranteed all 4 wheels will reach their target at the same time due
+    // to inconsistencies in alignment and resistance in the drivetrain. If we wait for all 4 wheels
+    // They will start fighting one another in a tug-of-war type effect and we may not transition
+    // to the next stage as we expect.
+    public boolean isMotionComplete() {
+        boolean motionComplete = false;
+
+        // Only watch until one of the wheels reaches position. At that point, stop all the motors
+        if (!motor_LF.isBusy() || !motor_RF.isBusy() || !motor_RR.isBusy() || !motor_LR.isBusy()) {
+            stopAndResetEncoders();
+            motionComplete = true;
+        }
+
+        return (motionComplete);
+    }
+
+
+    private void stopAndResetEncoders() {
+        motor_LF.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor_RF.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor_RR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor_LR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    }
+
+
+    private void runToPosition() {
+        motor_LF.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motor_RF.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motor_RR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motor_LR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
+
+    private void setTargetPosition(int distance)
+    {
+        motor_LF.setTargetPosition(distance);
+        motor_RF.setTargetPosition(distance);
+        motor_RR.setTargetPosition(distance);
+        motor_LR.setTargetPosition(distance);
+    }
+
+    public void endOfAutoShutdown() {
+        stopAndResetEncoders();
+    }
+}
