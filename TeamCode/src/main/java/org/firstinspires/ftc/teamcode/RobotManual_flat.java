@@ -6,15 +6,18 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @TeleOp(name="Robot Manual Flat")
-public class RobotManual_flat extends OpMode {
+public class RobotManual_flat extends OpMode{
     public DcMotor motor_LR;
     public DcMotor motor_RR;
     public DcMotor motor_LF;
     public DcMotor motor_RF;
+    public Servo pixelPusherLeft;
+    public Servo pixelPusherRight;
     double LFrontPower;
     double RFrontPower;
     double RRearPower;
@@ -36,18 +39,40 @@ public class RobotManual_flat extends OpMode {
         motor_LR = hardwareMap.get(DcMotor.class, "Motor_LR");
         motor_LR.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        pixelPusherLeft = hardwareMap.get(Servo.class, "servo_L");
+        pixelPusherRight = hardwareMap.get(Servo.class, "servo_R");
+
         setAllMecanumPowers(0.0);
-        
+
+        pixelPusherRight.setPosition(0.0);
+        pixelPusherLeft.setPosition(0.0);
         telemetry.addLine("Begin initializations");
         telemetry.addLine("... Mecanum init complete");
         telemetry.addLine("End initializations");
     }
 
     @Override
-    public void loop() {
+    public void loop(){
         manualDrive();
 
+        if (gamepad2.left_bumper == true){
+            pixelPusherLeft.setPosition(1.0);
+        }
+        else{
+            pixelPusherLeft.setPosition(0.0);
+        }
+
+        if (gamepad2.right_bumper == true) {
+            pixelPusherRight.setPosition(1.0);
+        }
+        else {
+            pixelPusherRight.setPosition(0.0);
+        }
+
+
         telemetry.update();
+
+
     }
 
 
