@@ -6,10 +6,11 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-@TeleOp(name="Robot Manual Flat")
+@TeleOp(name = "Robot Manual Flat")
 public class RobotManual_flat extends OpMode {
     public DcMotor motor_LR;
     public DcMotor motor_RR;
@@ -20,7 +21,14 @@ public class RobotManual_flat extends OpMode {
     double RFrontPower;
     double RRearPower;
     double LRearPower;
+    public Servo bucket;
     final double driveSensitivity = 0.7;
+    double bucketHome = 0.0;
+    double bucketEnd = 1.0;
+    double armSpeedUp = 0.2;
+    double armSpeedDown = 0.1;
+    int pixelArmCountsUp = -1330;
+    int pixelArmCountsDown = 0;
 
 
     @Override
@@ -40,37 +48,51 @@ public class RobotManual_flat extends OpMode {
         pixel_Motor = hardwareMap.get(DcMotor.class, "pixel_Motor");
         pixel_Motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
+        bucket = hardwareMap.get(Servo.class, "bucket_Servo");
+        bucket.setDirection(Servo.Direction.REVERSE);
+        bucket.setPosition(bucketHome);
+
         setAllMecanumPowers(0.0);
         pixel_Motor.setPower(0.0);
 
-        telemetry.addLine("Begin initializations");
-        telemetry.addLine("... Mecanum init complete");
-        telemetry.addLine("End initializations");
+        telemetry.addLine("End of initializations");
+        telemetry.update();
     }
 
     @Override
     public void loop() {
         manualDrive();
 
-        double armSpeedUp = 0.2;
-        double armSpeedDown = 0.1;
+        // When you press gamepad input the arm goes to home position.
         if (gamepad2.dpad_down) {
             pixel_Motor.setPower(armSpeedDown);
-            pixel_Motor.setTargetPosition(0);
+            pixel_Motor.setTargetPosition(pixelArmCountsDown);
             pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             telemetry.addLine("Moving Down");
 
         }
+
+        // When you press gamepad input the arm goes to up position.
         if (gamepad2.dpad_up) {
             pixel_Motor.setPower(armSpeedUp);
-            pixel_Motor.setTargetPosition(750);
+            pixel_Motor.setTargetPosition(pixelArmCountsUp);
             pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             telemetry.addLine("Moving Up");
         }
 
-        telemetry.update();
-    }
+        // When you press gamepad input it positions the bucket home.
+        if (gamepad2.dpad_left) {
+            bucket.setPosition(bucketHome);
+        }
 
+        // When you press gamepad input it positions the bucket end.
+        if (gamepad2.dpad_right) {
+            bucket.setPosition(bucketEnd);
+        }
+        telemetry.addData("PixelArm", pixel_Motor.getCurrentPosition());
+        telemetry.update();
+
+    }
 
 
     public void manualDrive() {
@@ -100,8 +122,8 @@ public class RobotManual_flat extends OpMode {
         // Ratio drive powers
         LFrontPower = (LFrontPower / max);
         RFrontPower = (RFrontPower / max);
-        RRearPower =  (RRearPower / max);
-        LRearPower =  (LRearPower / max);
+        RRearPower = (RRearPower / max);
+        LRearPower = (LRearPower / max);
 
         telemetry.addData("Max: ", max);
 
