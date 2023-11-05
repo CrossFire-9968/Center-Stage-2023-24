@@ -12,6 +12,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @TeleOp(name = "Robot Manual Flat")
 public class RobotManual_flat extends OpMode {
+    public DcMotor Intake_Motor;
     public DcMotor motor_LR;
     public DcMotor motor_RR;
     public DcMotor motor_LF;
@@ -22,6 +23,7 @@ public class RobotManual_flat extends OpMode {
     double RRearPower;
     double LRearPower;
     public Servo bucket;
+    public Servo Launcher;
     final double driveSensitivity = 0.7;
     double bucketHome = 0.0;
     double bucketEnd = 1.0;
@@ -29,10 +31,13 @@ public class RobotManual_flat extends OpMode {
     double armSpeedDown = 0.1;
     int pixelArmCountsUp = -1330;
     int pixelArmCountsDown = 0;
-
+    double LauncherMax = 1.0;
 
     @Override
     public void init() {
+        Intake_Motor = hardwareMap.get(DcMotor.class, "Intake_Motor");
+        Intake_Motor.setDirection(DcMotorSimple.Direction.REVERSE);
+
         motor_LF = hardwareMap.get(DcMotor.class, "Motor_LF");
         motor_LF.setDirection(DcMotorSimple.Direction.FORWARD);
 
@@ -52,6 +57,10 @@ public class RobotManual_flat extends OpMode {
         bucket.setDirection(Servo.Direction.REVERSE);
         bucket.setPosition(bucketHome);
 
+        Launcher = hardwareMap.get(Servo.class, "Launcher");
+        Launcher.setDirection(Servo.Direction.FORWARD);
+        Launcher.setPosition(0.0);
+
         setAllMecanumPowers(0.0);
         pixel_Motor.setPower(0.0);
 
@@ -64,6 +73,10 @@ public class RobotManual_flat extends OpMode {
         manualDrive();
 
         // When you press gamepad input the arm goes to home position.
+
+
+
+
         if (gamepad2.dpad_down) {
             pixel_Motor.setPower(armSpeedDown);
             pixel_Motor.setTargetPosition(pixelArmCountsDown);
@@ -89,6 +102,13 @@ public class RobotManual_flat extends OpMode {
         if (gamepad2.dpad_right) {
             bucket.setPosition(bucketEnd);
         }
+
+        if (gamepad2.right_bumper) {
+            Launcher.setPosition(LauncherMax);
+        }
+
+
+
         telemetry.addData("PixelArm", pixel_Motor.getCurrentPosition());
         telemetry.update();
 
@@ -99,6 +119,10 @@ public class RobotManual_flat extends OpMode {
         double strafeSpeed = gamepad1.left_stick_x;
         double turnSpeed = gamepad1.right_stick_x;
         double driveSpeed = gamepad1.left_stick_y;
+        double IntakePower = gamepad2.left_trigger;
+
+        //
+        Intake_Motor.setPower(IntakePower);
 
         // Raw drive power for each motor from joystick inputs
         LFrontPower = driveSpeed - turnSpeed - strafeSpeed;
