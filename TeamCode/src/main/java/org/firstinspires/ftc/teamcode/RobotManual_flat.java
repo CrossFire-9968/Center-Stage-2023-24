@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
@@ -23,13 +24,18 @@ public class RobotManual_flat extends OpMode {
     double LRearPower;
     public Servo bucket;
     final double driveSensitivity = 0.7;
-    double bucketHome = 0.0;
-    double bucketEnd = 1.0;
+    double bucketHome = 1.0;
+    double bucketEnd = 0.0;
     double armSpeedUp = 0.2;
     double armSpeedDown = 0.1;
     int pixelArmCountsUp = -1330;
     int pixelArmCountsDown = 0;
-
+    static final double INCREMENT   = 0.01;     // amount to slew servo each CYCLE_MS cycle
+    static final int    bucketDelay_MS    =   500;     // period of each cycle
+    boolean armUp = false;
+    double bucketPosition = 0.0;
+    private static ElapsedTime bucketTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    boolean useBucketTimer = false;
 
     @Override
     public void init() {
@@ -49,7 +55,7 @@ public class RobotManual_flat extends OpMode {
         pixel_Motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         bucket = hardwareMap.get(Servo.class, "bucket_Servo");
-        bucket.setDirection(Servo.Direction.REVERSE);
+        bucket.setDirection(Servo.Direction.FORWARD);
         bucket.setPosition(bucketHome);
 
         setAllMecanumPowers(0.0);
@@ -81,14 +87,42 @@ public class RobotManual_flat extends OpMode {
         }
 
         // When you press gamepad input it positions the bucket home.
-        if (gamepad2.dpad_left) {
+        if (gamepad2.dpad_right) {
             bucket.setPosition(bucketHome);
+            armUp = false;
+            useBucketTimer = false;
         }
 
         // When you press gamepad input it positions the bucket end.
-        if (gamepad2.dpad_right) {
-            bucket.setPosition(bucketEnd);
+        if (gamepad2.dpad_left  && !useBucketTimer) {
+            armUp = true;
+
         }
+
+        if (!useBucketTimer) {
+            bucketTimer.reset();
+        }
+
+        // Slowly increases bucket position
+        if (armUp) {
+            // Keep stepping up until we hit the max value.
+            bucketPosition += INCREMENT ;
+            if (bucketPosition >= bucketEnd) {
+                bucketPosition = bucketEnd;
+            }
+
+            bucket.setPosition(bucketPosition);
+            armUp = false;
+            useBucketTimer = true;
+            bucketTimer.reset();
+        }
+
+        if (bucketTimer.time() >= bucketDelay_MS) {
+            armUp = true;
+            useBucketTimer = false;
+        }
+
+
         telemetry.addData("PixelArm", pixel_Motor.getCurrentPosition());
         telemetry.update();
 
