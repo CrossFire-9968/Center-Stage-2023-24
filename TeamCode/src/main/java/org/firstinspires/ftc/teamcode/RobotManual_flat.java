@@ -31,7 +31,7 @@ public class RobotManual_flat extends OpMode {
     int pixelArmCountsUp = -1330;
     int pixelArmCountsDown = 0;
     static final double INCREMENT   = 0.01;     // amount to slew servo each CYCLE_MS cycle
-    static final int    bucketDelay_MS    =   500;     // period of each cycle
+    static final int    bucketDelay_MS    =   50;     // period of each cycle
     boolean armUp = false;
     double bucketPosition = 0.0;
     private static ElapsedTime bucketTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
@@ -87,14 +87,14 @@ public class RobotManual_flat extends OpMode {
         }
 
         // When you press gamepad input it positions the bucket home.
-        if (gamepad2.dpad_right) {
+        if (gamepad2.dpad_left) {
             bucket.setPosition(bucketHome);
             armUp = false;
             useBucketTimer = false;
         }
 
         // When you press gamepad input it positions the bucket end.
-        if (gamepad2.dpad_left  && !useBucketTimer) {
+        if (gamepad2.dpad_right  && !useBucketTimer) {
             armUp = true;
 
         }
@@ -109,20 +109,26 @@ public class RobotManual_flat extends OpMode {
             bucketPosition += INCREMENT ;
             if (bucketPosition >= bucketEnd) {
                 bucketPosition = bucketEnd;
+                armUp = false;
+                useBucketTimer = false;
             }
-
-            bucket.setPosition(bucketPosition);
-            armUp = false;
-            useBucketTimer = true;
-            bucketTimer.reset();
+            else {
+                bucket.setPosition(bucketPosition);
+                armUp = false;
+                useBucketTimer = true;
+                bucketTimer.reset();
+                telemetry.addLine("armUp is true");
+            }
         }
 
         if (bucketTimer.time() >= bucketDelay_MS) {
+            telemetry.addLine("I'm here");
             armUp = true;
             useBucketTimer = false;
         }
 
-
+        telemetry.addData("useBucketTimer", useBucketTimer);
+        telemetry.addData("bucket timer", bucketTimer.time());
         telemetry.addData("PixelArm", pixel_Motor.getCurrentPosition());
         telemetry.update();
 
