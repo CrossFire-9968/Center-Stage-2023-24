@@ -39,6 +39,10 @@ public class RobotManual_flat extends OpMode {
     boolean movingToDump = false;
     boolean movingToIncrement = false;
 
+    enum bucketDestination {
+        RAMP, DUMP;
+    };
+
     @Override
     public void init() {
         motor_LF = hardwareMap.get(DcMotor.class, "Motor_LF");
@@ -71,31 +75,7 @@ public class RobotManual_flat extends OpMode {
     @Override
     public void loop() {
         manualDrive();
-
-        if(gamepad2.a && !wasAPressed)
-        {
-            movingToDump = false;
-            movingToRamp = true;
-            movingToIncrement = false;
-            bucketTimer.reset();
-        }
-
-        if(gamepad2.y && !wasYPressed) {
-            movingToDump = true;
-            movingToRamp = false;
-            movingToIncrement = false;
-            bucketTimer.reset();
-        }
-
-        if (movingToRamp) {
-            bucketToRamp();
-        }
-        else if (movingToDump) {
-            bucketToDump();
-        }
-
-        wasAPressed = gamepad2.a;
-        wasYPressed = gamepad2.y;
+        rotateBucket();
 
         telemetry.addData("bucketPosition: ", bucket.getPosition());
         telemetry.addData("bucket timer", bucketTimer.time());
@@ -159,47 +139,74 @@ public class RobotManual_flat extends OpMode {
     }
 
 
-    protected void bucketToRamp()
+    protected void rotateBucket()
     {
-        if (!movingToIncrement)
-        {
-            movingToIncrement = true;
-            bucketPosition += INCREMENT;
-            Range.clip(bucketPosition, bucketDumpPosition, bucketRampPosition);
-            bucket.setPosition(bucketPosition);
-            bucketTimer.reset();
+        // Kicks off the bucket rotation but only when the button is first switches
+        // from unpressed (false) to pressed (true).
+        if(gamepad2.a && !wasAPressed) {
+            movingToRamp = true;
+            movingToDump = false;
         }
-
-        if (bucketTimer.time() >= bucketDelay_MS)
-        {
-            movingToIncrement = false;
-        }
-
-        if (bucketPosition >= bucketRampPosition) {
+        else if (gamepad2.y && !wasYPressed) {
+            movingToDump = true;
             movingToRamp = false;
-            movingToIncrement = false;
         }
+
+        // Code called each loop make the bucket move to the next increment in rotation
+        // The code has a timer so we can slow down how fast the bucket servo rotates.
+        if (movingToRamp) {
+            rotateBucketToPosition(bucketDestination.RAMP);
+        }
+        else if (movingToDump) {
+            rotateBucketToPosition(bucketDestination.DUMP);
+        }
+
+        // Retain the last state of the bucket rotation input so we can use it for assessing
+        // the transition from false to true (on press). You could also use it for determining
+        // on release transitions if you want as well.
+        wasAPressed = gamepad2.a;
+        wasYPressed = gamepad2.y;
     }
 
 
-    protected void bucketToDump()
+    private void rotateBucketToPosition(bucketDestination destination)
     {
         if (!movingToIncrement)
         {
+            // Initially set this to true, but later if we find the bucket is at the travel limit
+            // set it to false as we have already reached the desire destination.
             movingToIncrement = true;
-            bucketPosition -= INCREMENT;
-            Range.clip(bucketPosition, bucketDumpPosition, bucketRampPosition);
-            bucket.setPosition(bucketPosition);
-            bucketTimer.reset();
-        }
 
-        if (bucketTimer.time() >= bucketDelay_MS)
-        {
-            movingToIncrement = false;
-        }
+            // Increment or decrement the bucket position based on if we commanded
+            // it to rotate to the ramp or dump positions.
+            switch (destination) {
+                case RAMP:
+                    bucketPosition += INCREMENT;
+                    if (bucketPosition >= bucketRampPosition) {
+                        movingToRamp = false;
+                        movingToIncrement = false;
+                    }
+                    break;
+                case DUMP:
+                    bucketPosition -= INCREMENT;
+                    if (bucketPosition <= bucketDumpPosition) {
+                        movingToDump = false;
+                        movingToIncrement = false;
+                    }
+                    break;
+            }
 
-        if (bucketPosition <= bucketDumpPosition) {
-            movingToDump = false;
+            // Only move to the next increment in position if the bucket hasn't reached the desired position
+            if (movingToIncrement)
+            {
+                Range.clip(bucketPosition, bucketDumpPosition, bucketRampPosition);
+                bucket.setPosition(bucketPosition);
+                bucketTimer.reset();
+            }
+        }
+        // Wait to rotate the servo to the next increment for teh desired amount of time. The longer the
+        // delay between increments, the slower the bucket will rotate.
+        else if (bucketTimer.time() >= bucketDelay_MS) {
             movingToIncrement = false;
         }
     }
