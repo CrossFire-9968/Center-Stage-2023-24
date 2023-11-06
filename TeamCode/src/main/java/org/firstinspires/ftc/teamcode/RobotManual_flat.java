@@ -4,12 +4,9 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
+import com.qualcomm.robotcore.util.Range;
 
 @TeleOp(name = "Robot Manual Flat")
 public class RobotManual_flat extends OpMode {
@@ -24,18 +21,23 @@ public class RobotManual_flat extends OpMode {
     double LRearPower;
     public Servo bucket;
     final double driveSensitivity = 0.7;
-    double bucketHome = 1.0;
-    double bucketEnd = 0.0;
+    double bucketRampPosition = 1.0;
+    double bucketDumpPosition = 0.3;
     double armSpeedUp = 0.2;
     double armSpeedDown = 0.1;
     int pixelArmCountsUp = -1330;
     int pixelArmCountsDown = 0;
     static final double INCREMENT   = 0.01;     // amount to slew servo each CYCLE_MS cycle
-    static final int    bucketDelay_MS    =   50;     // period of each cycle
-    boolean armUp = false;
+    static final int    bucketDelay_MS    =   20;     // period of each cycle
+    boolean setArmMoving = false;
     double bucketPosition = 0.0;
     private static ElapsedTime bucketTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     boolean useBucketTimer = false;
+    boolean wasAPressed = false;
+    boolean wasYPressed = false;
+    boolean movingToRamp = false;
+    boolean movingToDump = false;
+    boolean movingToIncrement = false;
 
     @Override
     public void init() {
@@ -56,7 +58,8 @@ public class RobotManual_flat extends OpMode {
 
         bucket = hardwareMap.get(Servo.class, "bucket_Servo");
         bucket.setDirection(Servo.Direction.FORWARD);
-        bucket.setPosition(bucketHome);
+        bucket.setPosition(bucketRampPosition);
+        bucketPosition = bucketRampPosition;
 
         setAllMecanumPowers(0.0);
         pixel_Motor.setPower(0.0);
@@ -69,65 +72,32 @@ public class RobotManual_flat extends OpMode {
     public void loop() {
         manualDrive();
 
-        // When you press gamepad input the arm goes to home position.
-        if (gamepad2.dpad_down) {
-            pixel_Motor.setPower(armSpeedDown);
-            pixel_Motor.setTargetPosition(pixelArmCountsDown);
-            pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            telemetry.addLine("Moving Down");
-
-        }
-
-        // When you press gamepad input the arm goes to up position.
-        if (gamepad2.dpad_up) {
-            pixel_Motor.setPower(armSpeedUp);
-            pixel_Motor.setTargetPosition(pixelArmCountsUp);
-            pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            telemetry.addLine("Moving Up");
-        }
-
-        // When you press gamepad input it positions the bucket home.
-        if (gamepad2.dpad_left) {
-            bucket.setPosition(bucketHome);
-            armUp = false;
-            useBucketTimer = false;
-        }
-
-        // When you press gamepad input it positions the bucket end.
-        if (gamepad2.dpad_right  && !useBucketTimer) {
-            armUp = true;
-
-        }
-
-        if (!useBucketTimer) {
+        if(gamepad2.a && !wasAPressed)
+        {
+            movingToDump = false;
+            movingToRamp = true;
+            movingToIncrement = false;
             bucketTimer.reset();
         }
 
-        // Slowly increases bucket position
-        if (armUp) {
-            // Keep stepping up until we hit the max value.
-            bucketPosition += INCREMENT ;
-            if (bucketPosition >= bucketEnd) {
-                bucketPosition = bucketEnd;
-                armUp = false;
-                useBucketTimer = false;
-            }
-            else {
-                bucket.setPosition(bucketPosition);
-                armUp = false;
-                useBucketTimer = true;
-                bucketTimer.reset();
-                telemetry.addLine("armUp is true");
-            }
+        if(gamepad2.y && !wasYPressed) {
+            movingToDump = true;
+            movingToRamp = false;
+            movingToIncrement = false;
+            bucketTimer.reset();
         }
 
-        if (bucketTimer.time() >= bucketDelay_MS) {
-            telemetry.addLine("I'm here");
-            armUp = true;
-            useBucketTimer = false;
+        if (movingToRamp) {
+            bucketToRamp();
+        }
+        else if (movingToDump) {
+            bucketToDump();
         }
 
-        telemetry.addData("useBucketTimer", useBucketTimer);
+        wasAPressed = gamepad2.a;
+        wasYPressed = gamepad2.y;
+
+        telemetry.addData("bucketPosition: ", bucket.getPosition());
         telemetry.addData("bucket timer", bucketTimer.time());
         telemetry.addData("PixelArm", pixel_Motor.getCurrentPosition());
         telemetry.update();
@@ -186,5 +156,51 @@ public class RobotManual_flat extends OpMode {
         motor_RF.setPower(driveSensitivity * RFpower);
         motor_RR.setPower(driveSensitivity * RRpower);
         motor_LR.setPower(driveSensitivity * LRpower);
+    }
+
+
+    protected void bucketToRamp()
+    {
+        if (!movingToIncrement)
+        {
+            movingToIncrement = true;
+            bucketPosition += INCREMENT;
+            Range.clip(bucketPosition, bucketDumpPosition, bucketRampPosition);
+            bucket.setPosition(bucketPosition);
+            bucketTimer.reset();
+        }
+
+        if (bucketTimer.time() >= bucketDelay_MS)
+        {
+            movingToIncrement = false;
+        }
+
+        if (bucketPosition >= bucketRampPosition) {
+            movingToRamp = false;
+            movingToIncrement = false;
+        }
+    }
+
+
+    protected void bucketToDump()
+    {
+        if (!movingToIncrement)
+        {
+            movingToIncrement = true;
+            bucketPosition -= INCREMENT;
+            Range.clip(bucketPosition, bucketDumpPosition, bucketRampPosition);
+            bucket.setPosition(bucketPosition);
+            bucketTimer.reset();
+        }
+
+        if (bucketTimer.time() >= bucketDelay_MS)
+        {
+            movingToIncrement = false;
+        }
+
+        if (bucketPosition <= bucketDumpPosition) {
+            movingToDump = false;
+            movingToIncrement = false;
+        }
     }
 }
