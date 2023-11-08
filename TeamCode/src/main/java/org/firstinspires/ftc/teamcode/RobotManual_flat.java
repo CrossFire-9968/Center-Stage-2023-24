@@ -21,8 +21,8 @@ public class RobotManual_flat extends OpMode {
     double LRearPower;
     public Servo bucket;
     final double driveSensitivity = 0.7;
-    double bucketRampPosition = 1.0;
-    double bucketDumpPosition = 0.3;
+    double bucketRampPosition = 0.85;
+    double bucketDumpPosition = 0.0;
     double armSpeedUp = 0.2;
     double armSpeedDown = 0.1;
     int pixelArmCountsUp = -1330;
@@ -75,7 +75,7 @@ public class RobotManual_flat extends OpMode {
     @Override
     public void loop() {
         manualDrive();
-        rotateBucket();
+        pixelArmControl();
 
         telemetry.addData("bucketPosition: ", bucket.getPosition());
         telemetry.addData("bucket timer", bucketTimer.time());
@@ -139,18 +139,32 @@ public class RobotManual_flat extends OpMode {
     }
 
 
-    protected void rotateBucket()
+    protected void pixelArmControl()
     {
         // Kicks off the bucket rotation but only when the button is first switches
         // from unpressed (false) to pressed (true).
         if(gamepad2.a && !wasAPressed) {
             movingToRamp = true;
             movingToDump = false;
+            pixel_Motor.setPower(armSpeedDown);
+            pixel_Motor.setTargetPosition(pixelArmCountsDown);
+            pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         }
         else if (gamepad2.y && !wasYPressed) {
             movingToDump = true;
             movingToRamp = false;
+            pixel_Motor.setPower(armSpeedUp);
+            pixel_Motor.setTargetPosition(pixelArmCountsUp);
+            pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         }
+        if(gamepad2.b)
+        {
+            bucket.setPosition(0.5);
+        }
+
+
+        // When you press gamepad input the arm goes to up position.
+
 
         // Code called each loop make the bucket move to the next increment in rotation
         // The code has a timer so we can slow down how fast the bucket servo rotates.
