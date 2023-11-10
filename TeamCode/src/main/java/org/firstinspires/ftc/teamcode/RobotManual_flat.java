@@ -22,6 +22,7 @@ public class RobotManual_flat extends OpMode {
     double LRearPower;
     public Servo bucket;
     public Servo Launcher;
+    public Servo Ramp;
     final double driveSensitivity = 0.7;
     double bucketRampPosition = 0.85;
     double bucketDumpPosition = 0.0;
@@ -29,7 +30,8 @@ public class RobotManual_flat extends OpMode {
     double armSpeedDown = 0.1;
     int pixelArmCountsUp = -1330;
     int pixelArmCountsDown = 0;
-    double LauncherMax = 1.0;
+    double launcherMin = 0.4;
+    double launcherMax = 1.0;
     static final double INCREMENT   = 0.01;     // amount to slew servo each CYCLE_MS cycle
     static final int    bucketDelay_MS    =   20;     // period of each cycle
     boolean setArmMoving = false;
@@ -41,6 +43,9 @@ public class RobotManual_flat extends OpMode {
     boolean movingToRamp = false;
     boolean movingToDump = false;
     boolean movingToIncrement = false;
+    double pixelRampDown = 0.5;
+    double pixelRampUp = 0.0;
+    double intakePowerMin = 0.1;
 
     enum bucketDestination {
         RAMP, DUMP;
@@ -73,7 +78,11 @@ public class RobotManual_flat extends OpMode {
 
         Launcher = hardwareMap.get(Servo.class, "Launcher");
         Launcher.setDirection(Servo.Direction.FORWARD);
-        Launcher.setPosition(0.0);
+        Launcher.setPosition(launcherMin);
+
+        Ramp = hardwareMap.get(Servo.class, "Ramp");
+        Ramp.setDirection((Servo.Direction.FORWARD));
+        Ramp.setPosition(pixelRampUp);
 
         setAllMecanumPowers(0.0);
         pixel_Motor.setPower(0.0);
@@ -86,7 +95,8 @@ public class RobotManual_flat extends OpMode {
     public void loop() {
         manualDrive();
         pixelArmControl();
-
+        launchDrone();
+        runIntake();
         telemetry.addData("bucketPosition: ", bucket.getPosition());
         telemetry.addData("bucket timer", bucketTimer.time());
         telemetry.addData("PixelArm", pixel_Motor.getCurrentPosition());
@@ -94,15 +104,28 @@ public class RobotManual_flat extends OpMode {
 
     }
 
+    public void launchDrone() {
+        if (gamepad2.right_bumper) {
+            Launcher.setPosition(launcherMax);
+        }
+    }
+
+    public void runIntake () {
+        float intakePower = gamepad2.left_trigger;
+        if (intakePower >= intakePowerMin) {
+            Intake_Motor.setPower(intakePower);
+            Ramp.setPosition(pixelRampDown);
+        }
+        else {
+            Intake_Motor.setPower(0.0);
+            Ramp.setPosition(pixelRampUp);
+        }
+    }
 
     public void manualDrive() {
         double strafeSpeed = gamepad1.left_stick_x;
         double turnSpeed = gamepad1.right_stick_x;
         double driveSpeed = gamepad1.left_stick_y;
-        double IntakePower = gamepad2.left_trigger;
-
-        //
-        Intake_Motor.setPower(IntakePower);
 
         // Raw drive power for each motor from joystick inputs
         LFrontPower = driveSpeed - turnSpeed - strafeSpeed;
