@@ -46,8 +46,11 @@ public class RobotManual_flat extends OpMode {
     double pixelRampDown = 0.44;
     double pixelRampUp = 0.2;
     double intakePowerMin = 0.1;
-    double maxIntakePower = 0.8;
+    double outtakePowerMin = -0.1;
+    double pixelIntakePower = 0.8;
+    double pixelOuttakePower = -0.6;
     double strafeMax = 1.0;
+
 
     enum bucketDestination {
         RAMP, DUMP;
@@ -113,15 +116,17 @@ public class RobotManual_flat extends OpMode {
     }
 
     public void runIntake () {
-        float intakePower = -gamepad2.left_stick_y;
+        double intakePower = -gamepad2.left_stick_y;
 
-        Range.clip(intakePower, -maxIntakePower, maxIntakePower);
+        intakePower = Range.clip(intakePower, pixelOuttakePower, pixelIntakePower);
 
+        // Bring pixel into bucket
         if (intakePower >= intakePowerMin) {
             Intake_Motor.setPower(intakePower);
             Ramp.setPosition(pixelRampDown);
         }
-        else if (intakePower <= -intakePowerMin) {
+        // Expel pixel out of robot
+        else if (intakePower <= outtakePowerMin) {
             Intake_Motor.setPower(intakePower);
             Ramp.setPosition(pixelRampDown);
         }
@@ -130,6 +135,7 @@ public class RobotManual_flat extends OpMode {
             Ramp.setPosition(pixelRampUp);
         }
 
+        telemetry.addData("intakePower", intakePower);
 
 
     }
