@@ -43,9 +43,11 @@ public class RobotManual_flat extends OpMode {
     boolean movingToRamp = false;
     boolean movingToDump = false;
     boolean movingToIncrement = false;
-    double pixelRampDown = 0.5;
-    double pixelRampUp = 0.0;
+    double pixelRampDown = 0.44;
+    double pixelRampUp = 0.2;
     double intakePowerMin = 0.1;
+    double maxIntakePower = 0.8;
+    double strafeMax = 1.0;
 
     enum bucketDestination {
         RAMP, DUMP;
@@ -111,8 +113,15 @@ public class RobotManual_flat extends OpMode {
     }
 
     public void runIntake () {
-        float intakePower = gamepad2.left_trigger;
+        float intakePower = -gamepad2.left_stick_y;
+
+        Range.clip(intakePower, -maxIntakePower, maxIntakePower);
+
         if (intakePower >= intakePowerMin) {
+            Intake_Motor.setPower(intakePower);
+            Ramp.setPosition(pixelRampDown);
+        }
+        else if (intakePower <= -intakePowerMin) {
             Intake_Motor.setPower(intakePower);
             Ramp.setPosition(pixelRampDown);
         }
@@ -120,12 +129,24 @@ public class RobotManual_flat extends OpMode {
             Intake_Motor.setPower(0.0);
             Ramp.setPosition(pixelRampUp);
         }
+
+
+
     }
 
+
+
     public void manualDrive() {
-        double strafeSpeed = gamepad1.left_stick_x;
         double turnSpeed = gamepad1.right_stick_x;
         double driveSpeed = gamepad1.left_stick_y;
+        double strafeSpeed = 0.0;
+
+        if (gamepad1.left_bumper) {
+             strafeSpeed = -strafeMax;
+        }
+        else if (gamepad1.right_bumper) {
+            strafeSpeed =  strafeMax;
+        }
 
         // Raw drive power for each motor from joystick inputs
         LFrontPower = driveSpeed - turnSpeed - strafeSpeed;
