@@ -24,15 +24,18 @@ public class RobotManual_flat extends OpMode {
     public Servo Launcher;
     public Servo Ramp;
     final double driveSensitivity = 0.7;
-    double bucketRampPosition = 0.85;
-    double bucketDumpPosition = 0.0;
+    double bucketDownPosition = 0.85;
+    double bucketUpPosition = 0.05;
+    double bucketDumpPosition = 0.3;
     double armSpeedUp = 0.2;
     double armSpeedDown = 0.1;
     int pixelArmCountsUp = -1330;
     int pixelArmCountsDown = 0;
     double launcherMin = 0.4;
     double launcherMax = 1.0;
-    static final double INCREMENT   = 0.01;     // amount to slew servo each CYCLE_MS cycle
+    static final double RAISEINCREMENT = 0.01;     // amount to slew servo each CYCLE_MS cycle
+    static final double DUMPINCREMENT   = 0.005;     // amount to slew servo each CYCLE_MS cycle
+
     static final int    bucketDelay_MS    =   20;     // period of each cycle
     boolean setArmMoving = false;
     double bucketPosition = 0.0;
@@ -40,20 +43,20 @@ public class RobotManual_flat extends OpMode {
     boolean useBucketTimer = false;
     boolean wasAPressed = false;
     boolean wasYPressed = false;
-    boolean movingToRamp = false;
-    boolean movingToDump = false;
+    boolean movingArmDown = false;
+    boolean movingArmUp = false;
     boolean movingToIncrement = false;
     double pixelRampDown = 0.44;
     double pixelRampUp = 0.2;
     double intakePowerMin = 0.1;
     double outtakePowerMin = -0.1;
-    double pixelIntakePower = 0.8;
+    double pixelIntakePower = 0.95;
     double pixelOuttakePower = -0.6;
     double strafeMax = 1.0;
 
 
     enum bucketDestination {
-        RAMP, DUMP;
+        DOWN, UP, BUCKETDOWN, BUCKETUP;
     };
 
     @Override
@@ -78,8 +81,8 @@ public class RobotManual_flat extends OpMode {
 
         bucket = hardwareMap.get(Servo.class, "bucket_Servo");
         bucket.setDirection(Servo.Direction.FORWARD);
-        bucket.setPosition(bucketRampPosition);
-        bucketPosition = bucketRampPosition;
+        bucket.setPosition(bucketDownPosition);
+        bucketPosition = bucketDownPosition;
 
         Launcher = hardwareMap.get(Servo.class, "Launcher");
         Launcher.setDirection(Servo.Direction.FORWARD);
@@ -208,23 +211,23 @@ public class RobotManual_flat extends OpMode {
         // Kicks off the bucket rotation but only when the button is first switches
         // from unpressed (false) to pressed (true).
         if(gamepad2.a && !wasAPressed) {
-            movingToRamp = true;
-            movingToDump = false;
+            movingArmDown = true;
+            movingArmUp = false;
             pixel_Motor.setPower(armSpeedDown);
             pixel_Motor.setTargetPosition(pixelArmCountsDown);
             pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         }
         else if (gamepad2.y && !wasYPressed) {
-            movingToDump = true;
-            movingToRamp = false;
+            movingArmUp = true;
+            movingArmDown = false;
             pixel_Motor.setPower(armSpeedUp);
             pixel_Motor.setTargetPosition(pixelArmCountsUp);
             pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         }
-        if(gamepad2.b)
-        {
-            bucket.setPosition(0.5);
-        }
+//        if(gamepad2.b)
+//        {
+//            bucket.setPosition(0.5);
+//        }
 
 
         // When you press gamepad input the arm goes to up position.
@@ -232,11 +235,17 @@ public class RobotManual_flat extends OpMode {
 
         // Code called each loop make the bucket move to the next increment in rotation
         // The code has a timer so we can slow down how fast the bucket servo rotates.
-        if (movingToRamp) {
-            rotateBucketToPosition(bucketDestination.RAMP);
+        if (movingArmDown) {
+            rotateBucketToPosition(bucketDestination.DOWN);
         }
-        else if (movingToDump) {
-            rotateBucketToPosition(bucketDestination.DUMP);
+        else if (movingArmUp) {
+            rotateBucketToPosition(bucketDestination.UP);
+        }
+        else if (gamepad2.b) {
+            rotateBucketToPosition(bucketDestination.BUCKETDOWN);
+        }
+        else if (gamepad2.x) {
+            rotateBucketToPosition(bucketDestination.BUCKETUP);
         }
 
         // Retain the last state of the bucket rotation input so we can use it for assessing
@@ -258,26 +267,38 @@ public class RobotManual_flat extends OpMode {
             // Increment or decrement the bucket position based on if we commanded
             // it to rotate to the ramp or dump positions.
             switch (destination) {
-                case RAMP:
-                    bucketPosition += INCREMENT;
-                    if (bucketPosition >= bucketRampPosition) {
-                        movingToRamp = false;
+                case DOWN:
+                    bucketPosition += RAISEINCREMENT;
+                    if (bucketPosition >= bucketDownPosition) {
+                        movingArmDown = false;
                         movingToIncrement = false;
                     }
                     break;
-                case DUMP:
-                    bucketPosition -= INCREMENT;
-                    if (bucketPosition <= bucketDumpPosition) {
-                        movingToDump = false;
+                case UP:
+                    bucketPosition -= RAISEINCREMENT;
+                    if (bucketPosition <= bucketUpPosition) {
+                        movingArmUp = false;
                         movingToIncrement = false;
+                    }
+                    break;
+                case BUCKETDOWN:
+                    if (bucketPosition <= bucketDumpPosition) {
+                        bucketPosition += DUMPINCREMENT;
+                    }
+                    break;
+                case BUCKETUP:
+                    if (bucketPosition >= bucketUpPosition) {
+                        bucketPosition -= DUMPINCREMENT;
                     }
                     break;
             }
 
+            telemetry.addData("bucketPosition: ", bucketUpPosition);
+
             // Only move to the next increment in position if the bucket hasn't reached the desired position
             if (movingToIncrement)
             {
-                Range.clip(bucketPosition, bucketDumpPosition, bucketRampPosition);
+                Range.clip(bucketPosition, bucketDumpPosition, bucketDownPosition);
                 bucket.setPosition(bucketPosition);
                 bucketTimer.reset();
             }
