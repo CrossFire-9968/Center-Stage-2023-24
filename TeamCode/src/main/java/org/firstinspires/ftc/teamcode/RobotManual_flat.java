@@ -16,8 +16,6 @@ public class RobotManual_flat extends OpMode {
     public DcMotor motor_LF;
     public DcMotor motor_RF;
     public DcMotor pixel_Motor;
-    public DcMotor RigHangerL
-    public DcMotor RigHangerR
     double LFrontPower;
     double RFrontPower;
     double RRearPower;
@@ -75,11 +73,6 @@ public class RobotManual_flat extends OpMode {
         motor_LR = hardwareMap.get(DcMotor.class, "Motor_LR");
         motor_LR.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        RigHangerL = hardwareMap.get(DcMotor.class, "RigHangerL");
-        RigHangerL.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        RigHangerR = hardwareMap.get(DcMotor.class, "RigHangerR");
-        RigHangerR.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
         pixel_Motor = hardwareMap.get(DcMotor.class, "pixel_Motor");

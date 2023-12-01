@@ -2,12 +2,11 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-@Autonomous(name="Robot Auto Linear")
-public class RobotAuto_linear extends LinearOpMode
+@Autonomous(name="Robot Auto Far Blue")
+public class RobotAuto_linear_FarBlue extends LinearOpMode
 {
     public DcMotor motor_LR;
     public DcMotor motor_RR;
@@ -57,13 +56,13 @@ public class RobotAuto_linear extends LinearOpMode
             while(!isMotionComplete()){
                 idle();
             }
+            drive(0.5, 55*32);
 
-            strafe(0.5, 52*40);
 
             while(!isMotionComplete()) {
                 idle();
             }
-            drive(0.5, 85*32);
+            strafe(0.5, -90*40);
 
             while(!isMotionComplete()){
                 idle();}
