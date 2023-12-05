@@ -1,9 +1,11 @@
+package org.firstinspires.ftc.teamcode;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-@Autonomous(name="Robot Auto Near Blue")
+@Autonomous(name="Robot Auto Blue Pixel Drive")
 public class RobotAuto_linear_NearBlue extends LinearOpMode
 {
     public DcMotor motor_LR;
@@ -14,13 +16,21 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
     double RFrontPower;
     double RRearPower;
     double LRearPower;
+    double DriveSpeed = 0.5;
+    int DriveDistance = 24;
+    int DriveCounts = 32;
     final double driveSensitivity = 0.7;
     boolean isAutoComplete= false;
 
+    enum spikeLocation {
+        LEFT, MIDDLE, RIGHT;
+    };
 
     @Override
     public void runOpMode() throws InterruptedException
     {
+        spikeLocation pixelLocation = spikeLocation.LEFT;
+
         // Declare any local / helper variables here
         // Our initialization code should go here before calling "WaitForStart()"
 
@@ -49,12 +59,24 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
 
         // Run this code while Autonomous has not timed out
         while (opModeIsActive() && !isAutoComplete) {
-
+            drive(DriveSpeed, DriveDistance * DriveCounts);
 
             while(!isMotionComplete()){
                 idle();
             }
-            strafe(0.5, -48*40);
+
+            // Turn toward pixel location
+            if (pixelLocation == spikeLocation.RIGHT){
+                rotate(DriveSpeed, 1000);
+            }
+            if (pixelLocation == spikeLocation.LEFT){
+                rotate(DriveSpeed, -1000);
+            }
+
+//            while(!isMotionComplete()){
+//                idle();
+//            }
+//            strafe(0.5, -48*40);
 
             while(!isMotionComplete()){
                 idle();}
