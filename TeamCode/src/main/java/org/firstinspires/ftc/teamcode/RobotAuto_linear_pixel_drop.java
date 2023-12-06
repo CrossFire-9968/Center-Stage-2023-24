@@ -27,7 +27,7 @@ public class RobotAuto_linear_pixel_drop extends LinearOpMode
     double pixelRampDown = 0.44;
     double pixelRampUp = 0.2;
     public  DcMotor Intake_Motor ;
-    Servo Ramp ;
+    Servo Ramp;
 
     @Override
     public void runOpMode() throws InterruptedException
@@ -60,7 +60,7 @@ public class RobotAuto_linear_pixel_drop extends LinearOpMode
 
 
         setMecanumPowers(0.0);
-
+        Ramp.setPosition(pixelRampUp);
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
@@ -68,28 +68,18 @@ public class RobotAuto_linear_pixel_drop extends LinearOpMode
         while (opModeIsActive() && !isAutoComplete) {
 
 
-            while(!isMotionComplete()){
-                idle();
-            }
 
 
             Ramp.setPosition(pixelRampDown);
-
-
             Intake_Motor.setPower(-0.3);
-            sleep(1000);
-            Ramp.setPosition(pixelRampUp);
-            Intake_Motor.setPower(0.0);
-
-
-
+            drive(1,-9*32);
 
             while(!isMotionComplete()) {
                 idle();
             }
 
             isAutoComplete = true;
-        }
+        } Intake_Motor.setPower(0);
     }
 
 // 32 counts per inch est.
