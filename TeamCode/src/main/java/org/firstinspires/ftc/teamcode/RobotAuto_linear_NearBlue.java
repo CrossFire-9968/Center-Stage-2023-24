@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 
 @Autonomous(name="Robot Auto Blue Pixel Drive")
 public class RobotAuto_linear_NearBlue extends LinearOpMode
@@ -17,10 +18,16 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
     double RRearPower;
     double LRearPower;
     double DriveSpeed = 0.5;
-    int DriveDistance = 24;
+    int DriveDistance = 33;
+    int BackDriveDistance = -28;
     int DriveCounts = 32;
+    int TurnDegrees = 800;
     final double driveSensitivity = 0.7;
     boolean isAutoComplete= false;
+    double pixelRampUp = 0.2;
+    double pixelRampDown = 0.44;
+    public  DcMotor Intake_Motor ;
+    Servo Ramp;
 
     enum spikeLocation {
         LEFT, MIDDLE, RIGHT;
@@ -29,7 +36,7 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        spikeLocation pixelLocation = spikeLocation.LEFT;
+        spikeLocation pixelLocation = spikeLocation.MIDDLE;
 
         // Declare any local / helper variables here
         // Our initialization code should go here before calling "WaitForStart()"
@@ -51,6 +58,12 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
         motor_LR.setDirection(DcMotorSimple.Direction.FORWARD);
         motor_LR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        Intake_Motor = hardwareMap.get(DcMotor.class, "Intake_Motor");
+        Intake_Motor.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        Ramp = hardwareMap.get(Servo.class, "Ramp");
+        Ramp.setDirection((Servo.Direction.FORWARD));
+        Ramp.setPosition(pixelRampUp);
 
         setMecanumPowers(0.0);
 
@@ -67,22 +80,44 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
 
             // Turn toward pixel location
             if (pixelLocation == spikeLocation.RIGHT){
-                rotate(DriveSpeed, 1000);
+                rotate(DriveSpeed, TurnDegrees);
+
+                while(!isMotionComplete()){
+                    idle();
+                }
+                sleep(1000);
             }
-            if (pixelLocation == spikeLocation.LEFT){
-                rotate(DriveSpeed, -1000);
+            else if (pixelLocation == spikeLocation.LEFT){
+                rotate(DriveSpeed, -TurnDegrees);
+
+                while(!isMotionComplete()){
+                    idle();
+                }
+                sleep(1000);
             }
 
-//            while(!isMotionComplete()){
-//                idle();
-//            }
-//            strafe(0.5, -48*40);
+
+
+            Ramp.setPosition(pixelRampDown);
+            Intake_Motor.setPower(-0.3);
+            drive(DriveSpeed, BackDriveDistance * DriveCounts);
+
+            while(!isMotionComplete()){
+                idle();}
+
+
+            Intake_Motor.setPower(-0.3);
+
+            sleep(1000);
+
+            strafe(0.5, -48*40);
 
             while(!isMotionComplete()){
                 idle();}
 
             isAutoComplete = true;
         }
+
     }
 
 // 32 counts per inch est.
