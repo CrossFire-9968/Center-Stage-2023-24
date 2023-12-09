@@ -19,7 +19,8 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
     double LRearPower;
     double DriveSpeed = 0.5;
     int DriveDistance = 33;
-    int BackDriveDistance = -28;
+    int BackDriveDistance = -24;
+    //-28
     int DriveCounts = 32;
     int TurnDegrees = 800;
     final double driveSensitivity = 0.7;
@@ -36,7 +37,7 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        spikeLocation pixelLocation = spikeLocation.MIDDLE;
+        spikeLocation pixelLocation = spikeLocation.RIGHT;
 
         // Declare any local / helper variables here
         // Our initialization code should go here before calling "WaitForStart()"
@@ -81,7 +82,7 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
             // Turn toward pixel location
             if (pixelLocation == spikeLocation.RIGHT){
                 rotate(DriveSpeed, TurnDegrees);
-
+                
                 while(!isMotionComplete()){
                     idle();
                 }
@@ -110,7 +111,7 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
 
             sleep(1000);
 
-            strafe(0.5, -48*40);
+            //strafe(0.5, -48*40);
 
             while(!isMotionComplete()){
                 idle();}
