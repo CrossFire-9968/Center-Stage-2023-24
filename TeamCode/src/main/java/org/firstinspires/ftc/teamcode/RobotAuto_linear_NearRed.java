@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 
 @Autonomous(name="Robot Auto Near Red")
 public class RobotAuto_linear_NearRed extends LinearOpMode
@@ -18,6 +19,19 @@ public class RobotAuto_linear_NearRed extends LinearOpMode
     double LRearPower;
     final double driveSensitivity = 0.7;
     boolean isAutoComplete= false;
+    double DriveSpeed = 0.5;
+    int DriveDistance = 33;
+    int BackDriveDistance = -28;    //-28
+    int DriveCounts = 32;
+    int TurnDegrees = 800;
+    double pixelRampUp = 0.2;
+    double pixelRampDown = 0.44;
+    public  DcMotor Intake_Motor ;
+    Servo Ramp;
+
+    enum spikeLocation {
+        LEFT, MIDDLE, RIGHT;
+    };
 
 
     @Override
@@ -26,6 +40,7 @@ public class RobotAuto_linear_NearRed extends LinearOpMode
         // Declare any local / helper variables here
         // Our initialization code should go here before calling "WaitForStart()"
 
+        RobotAuto_linear_NearRed.spikeLocation pixelLocation = RobotAuto_linear_NearRed.spikeLocation.MIDDLE;
 
         motor_LF = hardwareMap.get(DcMotor.class, "Motor_LF");
         motor_LF.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -43,6 +58,13 @@ public class RobotAuto_linear_NearRed extends LinearOpMode
         motor_LR.setDirection(DcMotorSimple.Direction.FORWARD);
         motor_LR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        Intake_Motor = hardwareMap.get(DcMotor.class, "Intake_Motor");
+        Intake_Motor.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        Ramp = hardwareMap.get(Servo.class, "Ramp");
+        Ramp.setDirection((Servo.Direction.FORWARD));
+        Ramp.setPosition(pixelRampUp);
+
 
         setMecanumPowers(0.0);
 
@@ -51,13 +73,50 @@ public class RobotAuto_linear_NearRed extends LinearOpMode
 
         // Run this code while Autonomous has not timed out
         while (opModeIsActive() && !isAutoComplete) {
+            // Drive forward
+            drive(DriveSpeed, DriveDistance * DriveCounts);
+
+            while(!isMotionComplete()){
+                idle();
+            }
+
+            // Turn toward pixel location
+            if (pixelLocation == RobotAuto_linear_NearRed.spikeLocation.RIGHT){
+                rotate(DriveSpeed, TurnDegrees);
+
+                while(!isMotionComplete()){
+                    idle();
+                }
+                sleep(1000);
+            }
+            else if (pixelLocation == RobotAuto_linear_NearRed.spikeLocation.LEFT)
+            {
+                rotate(DriveSpeed, -TurnDegrees);
+
+                while (!isMotionComplete())
+                {
+                    idle();
+                }
+                sleep(1000);
+            }
+            Ramp.setPosition(pixelRampDown);
+            Intake_Motor.setPower(-0.3);
+            drive(DriveSpeed, BackDriveDistance * DriveCounts);
+
+            while(!isMotionComplete()){
+                idle();}
+
+            sleep(1000);
+            Intake_Motor.setPower(0.0);
+
+            Ramp.setPosition(pixelRampUp);
             strafe(0.5, 48*40);
 
             while(!isMotionComplete()){
                 idle();}
 
-
             isAutoComplete = true;
+
         }
     }
 
