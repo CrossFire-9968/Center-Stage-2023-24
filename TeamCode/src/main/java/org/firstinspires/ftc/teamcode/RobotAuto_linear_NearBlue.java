@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@Autonomous(name="Robot Auto Blue Pixel Drive")
+@Autonomous(name="Robot Auto Blue Near")
 public class RobotAuto_linear_NearBlue extends LinearOpMode
 {
     public DcMotor motor_LR;
@@ -17,12 +17,13 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
     double RFrontPower;
     double RRearPower;
     double LRearPower;
-    double DriveSpeed = 0.5;
+    double DriveSpeed = 0.3;
     int DriveDistance = 33;
     int BackDriveDistance = -28;
     //-28
+    int RDriveDist  = 19;
     int DriveCounts = 32;
-    int TurnDegrees = 800;
+    int TurnDegrees = 450;
     final double driveSensitivity = 0.7;
     boolean isAutoComplete= false;
     double pixelRampUp = 0.2;
@@ -37,7 +38,7 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        spikeLocation pixelLocation = spikeLocation.MIDDLE;
+        spikeLocation pixelLocation = spikeLocation.RIGHT;
 
         // Declare any local / helper variables here
         // Our initialization code should go here before calling "WaitForStart()"
@@ -73,53 +74,98 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
 
         // Run this code while Autonomous has not timed out
         while (opModeIsActive() && !isAutoComplete) {
-            drive(DriveSpeed, DriveDistance * DriveCounts);
-
-            while(!isMotionComplete()){
-                idle();
-            }
-
-            // Turn toward pixel location
+            // Right pixel location
             if (pixelLocation == spikeLocation.RIGHT){
-                rotate(DriveSpeed, TurnDegrees);
-                
-                while(!isMotionComplete()){
-                    idle();
-                }
-                sleep(1000);
+                dropRightPixel();
             }
+            // Left pixel location
             else if (pixelLocation == spikeLocation.LEFT){
-                rotate(DriveSpeed, -TurnDegrees);
-
-                while(!isMotionComplete()){
-                    idle();
-                }
-                sleep(1000);
+                dropLeftPixel();
             }
-
-
-
-            Ramp.setPosition(pixelRampDown);
-            Intake_Motor.setPower(-0.3);
-            drive(DriveSpeed, BackDriveDistance * DriveCounts);
-
-            while(!isMotionComplete()){
-                idle();}
-
-            sleep(1000);
-            Intake_Motor.setPower(0.0);
-
-
-            Ramp.setPosition(pixelRampUp);
-            strafe(0.5, -48*40);
-
-            while(!isMotionComplete()){
-                idle();}
-
-            isAutoComplete = true;
+            // Middle pixel location
+            else {
+                dropMiddlePixel();
+            }
         }
 
     }
+    public void dropRightPixel(){
+        //drive forward from wall
+        drive(DriveSpeed, RDriveDist * DriveCounts);
+        while(!isMotionComplete()){
+            idle();
+        }
+
+        // rotate towards tape
+        rotate(DriveSpeed, TurnDegrees);
+        while(!isMotionComplete()){
+            idle();
+        }
+
+        //drive forward to tape
+        drive(DriveSpeed, 11 * DriveCounts);
+        while(!isMotionComplete()){
+            idle();
+        }
+
+        //drop pixel - drop ramp, reverse intake, drive backwards
+        Ramp.setPosition(pixelRampDown);
+        Intake_Motor.setPower(-0.3);
+        drive(DriveSpeed, -27 * DriveCounts);
+        while(!isMotionComplete()){
+            idle();
+        }
+        //turn off intake and bring up ramp
+        Ramp.setPosition(pixelRampUp);
+        Intake_Motor.setPower(0.0);
+        sleep(500);
+
+        // shwoop to park
+        rotate(DriveSpeed, -1200);
+        isAutoComplete = true;
+        while(!isMotionComplete()){
+            idle();
+        }
+        //drive to park
+        drive(DriveSpeed, 22 * DriveCounts);
+        while(!isMotionComplete()){
+            idle();
+        }
+    }
+
+    public void dropLeftPixel(){
+        isAutoComplete = true;
+
+    }
+
+    public void dropMiddlePixel(){
+        //Driving forward
+        drive(DriveSpeed, DriveDistance * DriveCounts);
+
+        while(!isMotionComplete()){
+            idle();
+        }
+
+        Ramp.setPosition(pixelRampDown);
+        Intake_Motor.setPower(-0.3);
+        drive(DriveSpeed, BackDriveDistance * DriveCounts);
+
+        while(!isMotionComplete()){
+            idle();}
+
+        sleep(1000);
+        Intake_Motor.setPower(0.0);
+
+
+        Ramp.setPosition(pixelRampUp);
+        strafe(0.5, -48*40);
+
+        while(!isMotionComplete()){
+            idle();}
+
+        isAutoComplete = true;
+    }
+
 
 // 32 counts per inch est.
     public void drive(double power, int distance) {
@@ -139,10 +185,10 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
     }
 
 
-    public void rotate (double power, int distance) {
+    public void rotate (double power, int counts) {
         stopAndResetEncoders();
         setMecanumPowers(power);
-        setTargetPosition(distance, -distance, -distance, distance);
+        setTargetPosition(counts, -counts, -counts, counts);
         runToPosition();
     }
 

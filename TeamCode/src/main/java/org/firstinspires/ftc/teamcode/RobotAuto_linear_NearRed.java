@@ -28,6 +28,7 @@ public class RobotAuto_linear_NearRed extends LinearOpMode
     double pixelRampDown = 0.44;
     public  DcMotor Intake_Motor ;
     Servo Ramp;
+    int RDriveDist = 6;
 
     enum spikeLocation {
         LEFT, MIDDLE, RIGHT;
@@ -40,7 +41,7 @@ public class RobotAuto_linear_NearRed extends LinearOpMode
         // Declare any local / helper variables here
         // Our initialization code should go here before calling "WaitForStart()"
 
-        RobotAuto_linear_NearRed.spikeLocation pixelLocation = RobotAuto_linear_NearRed.spikeLocation.MIDDLE;
+        RobotAuto_linear_NearRed.spikeLocation pixelLocation = spikeLocation.RIGHT;
 
         motor_LF = hardwareMap.get(DcMotor.class, "Motor_LF");
         motor_LF.setDirection(DcMotorSimple.Direction.REVERSE);
