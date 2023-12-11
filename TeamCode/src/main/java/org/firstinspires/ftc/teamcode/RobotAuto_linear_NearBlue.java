@@ -13,37 +13,24 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
     public DcMotor motor_RR;
     public DcMotor motor_LF;
     public DcMotor motor_RF;
-    double LFrontPower;
-    double RFrontPower;
-    double RRearPower;
-    double LRearPower;
-    double DriveSpeed = 0.3;
-    int DriveDistance = 33;
-    int BackDriveDistance = -28;
-    //-28
-    int RDriveDist  = 19;
-    int DriveCounts = 32;
-    int TurnDegrees = 450;
-    final double driveSensitivity = 0.7;
-    boolean isAutoComplete= false;
-    double pixelRampUp = 0.2;
-    double pixelRampDown = 0.44;
     public  DcMotor Intake_Motor ;
     Servo Ramp;
 
+    int countsToDriveOneInch = 32;      // Approximate encoder counts to drive 1 inch
+    int countsToRotate45Degrees = 450;  // Approximate encoder counts to rotate 45 degrees
+    int countsToStrafeOneInch = 39;     // Approximate encoder counts to strafe 1 inch
+    final double driveSensitivity = 0.7;
+    double intakeMotorPower = -0.3;     // Intake motor power
+    double pixelRampUp = 0.2;
+    double pixelRampDown = 0.44;
+
     enum spikeLocation {
-        LEFT, MIDDLE, RIGHT;
+        LEFT, CENTER, RIGHT;
     };
 
     @Override
     public void runOpMode() throws InterruptedException
     {
-        spikeLocation pixelLocation = spikeLocation.RIGHT;
-
-        // Declare any local / helper variables here
-        // Our initialization code should go here before calling "WaitForStart()"
-
-
         motor_LF = hardwareMap.get(DcMotor.class, "Motor_LF");
         motor_LF.setDirection(DcMotorSimple.Direction.REVERSE);
         motor_LF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -65,109 +52,195 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
 
         Ramp = hardwareMap.get(Servo.class, "Ramp");
         Ramp.setDirection((Servo.Direction.FORWARD));
-        Ramp.setPosition(pixelRampUp);
 
-        setMecanumPowers(0.0);
+        // Initialize robot
+        initRobot();
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
+        // Until we have camera working, this is a way to cycle pixel location for test
+        // Hit a-button to cycle to position
+        spikeLocation pixelLocation = spikeLocation.CENTER;
+        String testLocation = "CENTER";
+        if (gamepad1.start) {
+            switch (pixelLocation) {
+                case CENTER:
+                    pixelLocation = spikeLocation.CENTER;
+                    testLocation = "CENTER";
+                    break;
+                case RIGHT:
+                    pixelLocation = spikeLocation.RIGHT;
+                    testLocation = "RIGHT";
+                    break;
+                case LEFT:
+                    pixelLocation = spikeLocation.LEFT;
+                    testLocation = "LEFT";
+                    break;
+            }
+        }
+
+        telemetry.addData("Pixel Location: ", pixelLocation);
+
         // Run this code while Autonomous has not timed out
-        while (opModeIsActive() && !isAutoComplete) {
-            // Right pixel location
-            if (pixelLocation == spikeLocation.RIGHT){
-                dropRightPixel();
-            }
-            // Left pixel location
-            else if (pixelLocation == spikeLocation.LEFT){
-                dropLeftPixel();
-            }
-            // Middle pixel location
-            else {
-                dropMiddlePixel();
+        while (opModeIsActive()) {
+
+//            // Right pixel location
+//            if (pixelLocation == spikeLocation.RIGHT) {
+//                dropRightPixel();
+//            }
+//            // Left pixel location
+//            else if (pixelLocation == spikeLocation.LEFT) {
+//                dropLeftPixel();
+//            }
+//            // Middle pixel location
+//            else if (pixelLocation == spikeLocation.CENTER) {
+//                dropCenterPixel();
+//            }
+//            // If position is not detectable, then just park
+//            else {
+//                // Need code for parking
+//            }
+
+            switch (pixelLocation) {
+                // Center pixel location detected
+                case CENTER:
+                    dropCenterPixel();
+                    break;
+
+                // Right pixel location detected
+                case RIGHT:
+                    dropRightPixel();
+                    break;
+
+                // Left pixel location detected
+                case LEFT:
+                    dropLeftPixel();
+                    break;
+
+                // If position is not detectable, then just park
+                default:
+                    simplePark();
             }
         }
 
+        // After all the code runs once, Automomous is over so make robot safe and wait for teleop
+        initRobot();
     }
-    public void dropRightPixel(){
-        //drive forward from wall
-        drive(DriveSpeed, RDriveDist * DriveCounts);
-        while(!isMotionComplete()){
-            idle();
-        }
 
-        // rotate towards tape
-        rotate(DriveSpeed, TurnDegrees);
-        while(!isMotionComplete()){
-            idle();
-        }
 
-        //drive forward to tape
-        drive(DriveSpeed, 11 * DriveCounts);
-        while(!isMotionComplete()){
-            idle();
-        }
+    /**
+     * <p>Initializes the robot to a de-energized state. Call this method before Autonomous
+     * to prepare the robot and after Autonomous to shut down all the actuators.
+     * </p>
+     */
+    public void initRobot() {
+        // Turn off drivetrain motors
+        setMecanumPowers(0.0);
 
-        //drop pixel - drop ramp, reverse intake, drive backwards
+        // Raise pixel ramp off floor and turn off intake motor
+        Ramp.setPosition(pixelRampUp);
+        Intake_Motor.setPower(0.0);
+    }
+
+
+    /**
+     * <p> Sequence of events for dropping the pixel on the center tape and then parking </p>
+     */
+    public void dropCenterPixel() {
+        double drivePower = 0.3;                // Motor power
+        int driveDistanceFromWall = 33;         // Inches
+        int driveDistanceToDropPixel = -28;     // Inches
+        int strafeDistanceToPark = -48;         // Inches
+
+        // Drive forward from wall
+        drive(drivePower, driveDistanceFromWall * countsToDriveOneInch);
+        waitForDriveToPosition();
+        sleep(500);
+
+        // Drop pixel - drop ramp, reverse intake, drive backwards
         Ramp.setPosition(pixelRampDown);
-        Intake_Motor.setPower(-0.3);
-        drive(DriveSpeed, -27 * DriveCounts);
-        while(!isMotionComplete()){
-            idle();
-        }
-        //turn off intake and bring up ramp
+        Intake_Motor.setPower(intakeMotorPower);
+        sleep(500);
+
+        // Drive backwards to lay down pixel
+        drive(drivePower, driveDistanceToDropPixel * countsToDriveOneInch);
+        waitForDriveToPosition();
+
+        // Turn off intake and bring up ramp
         Ramp.setPosition(pixelRampUp);
         Intake_Motor.setPower(0.0);
         sleep(500);
 
-        // shwoop to park
-        rotate(DriveSpeed, -1200);
-        isAutoComplete = true;
-        while(!isMotionComplete()){
-            idle();
-        }
-        //drive to park
-        drive(DriveSpeed, 22 * DriveCounts);
-        while(!isMotionComplete()){
-            idle();
-        }
+        // Drive to park position
+        strafe(drivePower, strafeDistanceToPark * countsToStrafeOneInch);
+        waitForDriveToPosition();
     }
 
-    public void dropLeftPixel(){
-        isAutoComplete = true;
 
-    }
+    /**
+     * <p> Sequence of events for dropping the pixel on the righthand tape and then parking </p>
+     */
+    public void dropRightPixel() {
+        double drivePower = 0.3;            // Motor power
+        int driveDistanceFromWall = 19;     // Inches
+        int countsToRotateToPixel = 450;    // 450 is about 45 degrees
+        int driveDistanceToTape = 11;  // Inches
+        int driveDistanceToDropPixel = -27;  // Inches
+        int countsToRotateToPark = -1100;    // 450 is about 45 degrees
+        int driveDistanceToPark = 22;        // Inches
 
-    public void dropMiddlePixel(){
-        //Driving forward
-        drive(DriveSpeed, DriveDistance * DriveCounts);
+        // Drive forward from wall
+        drive(drivePower, driveDistanceFromWall * countsToDriveOneInch);
+        waitForDriveToPosition();
+        sleep(500);
 
-        while(!isMotionComplete()){
-            idle();
-        }
+        // Rotate towards tape
+        rotate(drivePower, countsToRotateToPixel);
+        waitForDriveToPosition();
+        sleep(500);
 
+        // Drive forward to tape
+        drive(drivePower, driveDistanceToTape * countsToDriveOneInch);
+        waitForDriveToPosition();
+        sleep(500);
+
+        // Drop pixel - drop ramp, reverse intake, drive backwards
         Ramp.setPosition(pixelRampDown);
-        Intake_Motor.setPower(-0.3);
-        drive(DriveSpeed, BackDriveDistance * DriveCounts);
+        Intake_Motor.setPower(intakeMotorPower);
+        sleep(500);
 
-        while(!isMotionComplete()){
-            idle();}
+        // Drive backwards to lay down pixel
+        drive(drivePower, driveDistanceToDropPixel * countsToDriveOneInch);
+        waitForDriveToPosition();
 
-        sleep(1000);
-        Intake_Motor.setPower(0.0);
-
-
+        // Turn off intake and bring up ramp
         Ramp.setPosition(pixelRampUp);
-        strafe(0.5, -48*40);
+        Intake_Motor.setPower(0.0);
+        sleep(500);
 
-        while(!isMotionComplete()){
-            idle();}
+        // Rotate toward backdrop
+        rotate(drivePower, countsToRotateToPark);
+        waitForDriveToPosition();
+        sleep(500);
 
-        isAutoComplete = true;
+        // Drive to park position
+        drive(drivePower, driveDistanceToPark * countsToDriveOneInch);
+        waitForDriveToPosition();
     }
 
 
-// 32 counts per inch est.
+    /**
+     * <p> Sequence of events for dropping the pixel on the lefthand tape and then parking </p>
+     */
+    public void dropLeftPixel(){
+
+    }
+
+
+    /**
+     * <p> Sequence of events for dropping the pixel on the lefthand tape and then parking </p>
+     */
     public void drive(double power, int distance) {
         stopAndResetEncoders();
         setMecanumPowers(power);
@@ -175,7 +248,10 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
         runToPosition();
     }
 
-// 39 counts per inch est.
+
+    /**
+     * <p> Sequence of events for dropping the pixel on the lefthand tape and then parking </p>
+     */
     public void strafe (double power, int distance)
     {
         stopAndResetEncoders();
@@ -185,6 +261,9 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
     }
 
 
+    /**
+     * <p> Sequence of events for dropping the pixel on the lefthand tape and then parking </p>
+     */
     public void rotate (double power, int counts) {
         stopAndResetEncoders();
         setMecanumPowers(power);
@@ -193,7 +272,9 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
     }
 
 
-    // Set all mecanum powers
+    /**
+     * <p> Sequence of events for dropping the pixel on the lefthand tape and then parking </p>
+     */
     protected void setMecanumPowers(double power) {
         motor_LF.setPower(power);
         motor_RF.setPower(power);
@@ -202,32 +283,28 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
     }
 
 
-    protected void setMecanumPowers(double LFpower, double RFpower, double RRpower, double LRpower) {
-        motor_LF.setPower(driveSensitivity * LFpower);
-        motor_RF.setPower(driveSensitivity * RFpower);
-        motor_RR.setPower(driveSensitivity * RRpower);
-        motor_LR.setPower(driveSensitivity * LRpower);
-    }
-
-
-    // Drive until one of the 4 wheels has reached it's target position. We only wait for one
-    // because it is not guaranteed all 4 wheels will reach their target at the same time due
-    // to inconsistencies in alignment and resistance in the drivetrain. If we wait for all 4 wheels
-    // They will start fighting one another in a tug-of-war type effect and we may not transition
-    // to the next stage as we expect.
-    public boolean isMotionComplete() {
-        boolean motionComplete = false;
-
-        // Only watch until one of the wheels reaches position. At that point, stop all the motors
-        if (!motor_LF.isBusy() || !motor_RF.isBusy() || !motor_RR.isBusy() || !motor_LR.isBusy()) {
-            stopAndResetEncoders();
-            motionComplete = true;
+    /**
+     * <p> Drive until one of the 4 wheels has reached it's target position. We only wait for one
+     * because it is not guaranteed all 4 wheels will reach their target at the same time due
+     * to inconsistencies in alignment and resistance in the drivetrain. If we wait for all 4 wheels
+     * They will start fighting one another in a tug-of-war type effect and we may not transition
+     * to the next stage as we expect.
+     * </p>
+     */
+    public void waitForDriveToPosition() {
+        while (motor_LF.isBusy() && motor_RF.isBusy() && motor_RR.isBusy() && motor_LR.isBusy())
+        {
+            idle();
         }
 
-        return (motionComplete);
+        // Once position is reached stop all motors and reset their relative encoder counts to zero
+        stopAndResetEncoders();
     }
 
 
+    /**
+     * <p> Turn off all drivetrain motors and reset encoder counts </p>
+     */
     private void stopAndResetEncoders() {
         motor_LF.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motor_RF.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -236,6 +313,9 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
     }
 
 
+    /**
+     * <p> Commands all drivetrain motors to start motion </p>
+     */
     private void runToPosition() {
         motor_LF.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motor_RF.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -244,6 +324,9 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
     }
 
 
+    /**
+     * <p> Sets target position for all drivetrain motors each to a custom value</p>
+     */
     private void setTargetPosition(int LF_distance, int RF_distance, int RR_distance, int LR_distance)
     {
         motor_LF.setTargetPosition(LF_distance);
@@ -252,15 +335,15 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
         motor_LR.setTargetPosition(LR_distance);
     }
 
+
+    /**
+     * <p> Sets target position for all drivetrain motors to same value </p>
+     */
     private void setTargetPosition(int distance)
     {
         motor_LF.setTargetPosition(distance);
         motor_RF.setTargetPosition(distance);
         motor_RR.setTargetPosition(distance);
         motor_LR.setTargetPosition(distance);
-    }
-
-    public void endOfAutoShutdown() {
-        stopAndResetEncoders();
     }
 }
