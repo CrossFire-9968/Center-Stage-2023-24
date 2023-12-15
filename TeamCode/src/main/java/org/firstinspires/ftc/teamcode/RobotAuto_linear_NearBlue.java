@@ -61,7 +61,7 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
 
         // Until we have camera working, this is a way to cycle pixel location for test
         // Hit a-button to cycle to position
-        spikeLocation pixelLocation = spikeLocation.CENTER;
+        spikeLocation pixelLocation = spikeLocation.LEFT;
         String testLocation = "CENTER";
         if (gamepad1.start) {
             switch (pixelLocation) {
@@ -120,7 +120,8 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
 
                 // If position is not detectable, then just park
                 default:
-                    simplePark();
+//                    simplePark();
+//                    rotate();
             }
         }
 
@@ -234,7 +235,51 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
      * <p> Sequence of events for dropping the pixel on the lefthand tape and then parking </p>
      */
     public void dropLeftPixel(){
+        double drivePower = 0.3;            // Motor power
+        int driveDistanceFromWall = 19;     // Inches
+        int countsToRotateToPixel = -450;    // 450 is about 45 degrees
+        int driveDistanceToTape = 8;  // Inches
+        int driveDistanceToDropPixel = -27;  // Inches
+        int countsToRotateToPark = -600;    // 450 is about 45 degrees
+        int driveDistanceToPark = 22;        // Inches
 
+        // Drive forward from wall
+        drive(drivePower, driveDistanceFromWall * countsToDriveOneInch);
+        waitForDriveToPosition();
+        sleep(500);
+
+        // Rotate towards tape
+        rotate(drivePower, countsToRotateToPixel);
+        waitForDriveToPosition();
+        sleep(500);
+
+        // Drive forward to tape
+        drive(drivePower, driveDistanceToTape * countsToDriveOneInch);
+        waitForDriveToPosition();
+        sleep(500);
+
+        // Drop pixel - drop ramp, reverse intake, drive backwards
+        Ramp.setPosition(pixelRampDown);
+        Intake_Motor.setPower(intakeMotorPower);
+        sleep(500);
+
+        // Drive backwards to lay down pixel
+        drive(drivePower, driveDistanceToDropPixel * countsToDriveOneInch);
+        waitForDriveToPosition();
+
+        // Turn off intake and bring up ramp
+        Ramp.setPosition(pixelRampUp);
+        Intake_Motor.setPower(0.0);
+        sleep(500);
+
+        // Rotate toward backdrop
+        rotate(drivePower, countsToRotateToPark);
+        waitForDriveToPosition();
+        sleep(500);
+
+        // Drive to park position
+        drive(drivePower, driveDistanceToPark * countsToDriveOneInch);
+        waitForDriveToPosition();
     }
 
 
