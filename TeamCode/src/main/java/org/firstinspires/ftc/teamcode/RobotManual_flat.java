@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -53,7 +54,9 @@ public class RobotManual_flat extends OpMode {
     double pixelIntakePower = 0.95;
     double pixelOuttakePower = -0.6;
     double strafeMax = 1.0;
-
+    public DcMotor Hanger_Motor1;
+    public DcMotor Hanger_Motor2;
+    public CRServo Measure_Roller;
 
     enum bucketDestination {
         DOWN, UP, BUCKETDOWN, BUCKETUP;
@@ -76,7 +79,11 @@ public class RobotManual_flat extends OpMode {
         motor_LR = hardwareMap.get(DcMotor.class, "Motor_LR");
         motor_LR.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        Hanger_Motor1 = hardwareMap.get(DcMotor.class, "Hanger_Motor1");
+        Hanger_Motor1.setDirection(DcMotorSimple.Direction.FORWARD);
 
+        Hanger_Motor2 = hardwareMap.get(DcMotor.class, "Hanger_Motor2");
+        Hanger_Motor2.setDirection(DcMotorSimple.Direction.FORWARD);
 
         pixel_Motor = hardwareMap.get(DcMotor.class, "pixel_Motor");
         pixel_Motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -93,6 +100,10 @@ public class RobotManual_flat extends OpMode {
         Ramp = hardwareMap.get(Servo.class, "Ramp");
         Ramp.setDirection((Servo.Direction.FORWARD));
         Ramp.setPosition(pixelRampUp);
+
+        Measure_Roller = hardwareMap.get(CRServo.class, "Measure_Roller");
+        Measure_Roller.setDirection((CRServo.Direction.FORWARD));
+
 
         setAllMecanumPowers(0.0);
         pixel_Motor.setPower(0.0);
@@ -152,6 +163,21 @@ public class RobotManual_flat extends OpMode {
         double driveSpeed = gamepad1.left_stick_y;
         double strafeSpeed = 0.0;
 
+       if (gamepad2.dpad_down) {
+           Hanger_Motor1.setPower(-100);
+           Hanger_Motor2.setPower(100);
+
+           if (gamepad2.dpad_right) {
+               Hanger_Motor1.setPower(100);
+               Hanger_Motor2.setPower(-100);
+
+       }else            Hanger_Motor1.setPower(0);
+        Hanger_Motor2.setPower(0);
+
+       if (gamepad2.dpad_up){
+           Measure_Roller.setPower(40);
+       }else        Measure_Roller.setPower(0);
+
         if (gamepad1.left_bumper) {
              strafeSpeed = -strafeMax;
         }
@@ -197,6 +223,9 @@ public class RobotManual_flat extends OpMode {
         motor_RF.setPower(power);
         motor_RR.setPower(power);
         motor_LR.setPower(power);
+        Hanger_Motor1.setPower(power);
+        Hanger_Motor2.setPower(power);
+
     }
 
 
