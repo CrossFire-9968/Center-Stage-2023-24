@@ -397,11 +397,16 @@ public class RobotManual_flat extends OpMode
       // Deploys the winch hook up
       if (gamepad2.dpad_up)
       {
-         Measure_Roller.setPower(40);
+         Measure_Roller.setPower(1);
+      }
+      else if (gamepad2.dpad_left)
+      {
+         Measure_Roller.setPower(-1);
       }
       else
       {
          Measure_Roller.setPower(0);
+
       }
    }
 }
