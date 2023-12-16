@@ -56,7 +56,7 @@ public class RobotAuto_linear_FarRed extends LinearOpMode
             while(!isMotionComplete()){
                 idle();
             }
-            drive(0.5, 55*32);
+            drive(0.5, 57*32);
 
 
             while(!isMotionComplete()) {
