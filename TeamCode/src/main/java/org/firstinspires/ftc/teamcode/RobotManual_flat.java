@@ -376,14 +376,14 @@ public class RobotManual_flat extends OpMode
    public void hangerControl()
    {
       // Winch the robot up off the floor
-      if (gamepad2.dpad_down)
+      if (gamepad2.dpad_right)
       {
          Hanger_Motor1.setPower(-1.0);
          Hanger_Motor2.setPower(1.0);
       }
 
       // Lower the robot toward the floor
-      else if (gamepad2.dpad_right)
+      else if (gamepad2.dpad_left)
       {
          Hanger_Motor1.setPower(1.0);
          Hanger_Motor2.setPower(-1.0);
@@ -399,7 +399,7 @@ public class RobotManual_flat extends OpMode
       {
          Measure_Roller.setPower(1);
       }
-      else if (gamepad2.dpad_left)
+      else if (gamepad2.dpad_down)
       {
          Measure_Roller.setPower(-1);
       }
