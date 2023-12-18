@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@Autonomous(name="Robot Auto Blue Pixel Drive")
+@Autonomous(name="Robot Auto Blue")
 public class RobotAuto_linear_NearBlue extends LinearOpMode
 {
     public DcMotor motor_LR;
