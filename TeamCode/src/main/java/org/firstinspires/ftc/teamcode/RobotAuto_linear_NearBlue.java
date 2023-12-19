@@ -14,9 +14,10 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
     public DcMotor motor_LF;
     public DcMotor motor_RF;
     public  DcMotor Intake_Motor ;
+    boolean isAutoComplete = false;
     Servo Ramp;
 
-    int countsToDriveOneInch = 32;      // Approximate encoder counts to drive 1 inch
+    int countsToDriveOneInch = 33;      // Approximate encoder counts to drive 1 inch
     int countsToRotate45Degrees = 450;  // Approximate encoder counts to rotate 45 degrees
     int countsToStrafeOneInch = 39;     // Approximate encoder counts to strafe 1 inch
     final double driveSensitivity = 0.7;
@@ -83,7 +84,7 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
         telemetry.addData("Pixel Location: ", pixelLocation);
 
         // Run this code while Autonomous has not timed out
-        while (opModeIsActive()) {
+        while (opModeIsActive() && !isAutoComplete) {
 
 //            // Right pixel location
 //            if (pixelLocation == spikeLocation.RIGHT) {
@@ -123,6 +124,10 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
 //                    simplePark();
 //                    rotate();
             }
+
+
+            // When auto is complete, code stops.
+             isAutoComplete = true;
         }
 
         // After all the code runs once, Automomous is over so make robot safe and wait for teleop
@@ -150,9 +155,11 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
      */
     public void dropCenterPixel() {
         double drivePower = 0.3;                // Motor power
-        int driveDistanceFromWall = 33;         // Inches
+        int driveDistanceFromWall = 32;         // Inches
         int driveDistanceToDropPixel = -28;     // Inches
         int strafeDistanceToPark = -48;         // Inches
+        int rotateToPark = -875;
+        int strafeToPark = -45;
 
         // Drive forward from wall
         drive(drivePower, driveDistanceFromWall * countsToDriveOneInch);
@@ -173,9 +180,19 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
         Intake_Motor.setPower(0.0);
         sleep(500);
 
-        // Drive to park position
-        strafe(drivePower, strafeDistanceToPark * countsToStrafeOneInch);
+        // strafe to avoid bars
+        strafe(drivePower, strafeToPark * countsToDriveOneInch);
         waitForDriveToPosition();
+        sleep(500);
+
+        // Rotate towards park position
+        rotate(drivePower,rotateToPark);
+        waitForDriveToPosition();
+        sleep(500);
+
+
+
+
     }
 
 
@@ -186,9 +203,9 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
         double drivePower = 0.3;            // Motor power
         int driveDistanceFromWall = 19;     // Inches
         int countsToRotateToPixel = 450;    // 450 is about 45 degrees
-        int driveDistanceToTape = 11;  // Inches
+        int driveDistanceToTape = 9;  // Inches
         int driveDistanceToDropPixel = -27;  // Inches
-        int countsToRotateToPark = -1100;    // 450 is about 45 degrees
+        int countsToRotateToPark = -1200;    // 450 is about 45 degrees
         int driveDistanceToPark = 22;        // Inches
 
         // Drive forward from wall
@@ -225,7 +242,7 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
         waitForDriveToPosition();
         sleep(500);
 
-        // Drive to park position
+        // Rotate and Drive to park position
         drive(drivePower, driveDistanceToPark * countsToDriveOneInch);
         waitForDriveToPosition();
     }
@@ -236,11 +253,11 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
      */
     public void dropLeftPixel(){
         double drivePower = 0.3;            // Motor power
-        int driveDistanceFromWall = 19;     // Inches
+        int driveDistanceFromWall = 24;     // Inches
         int countsToRotateToPixel = -450;    // 450 is about 45 degrees
         int driveDistanceToTape = 8;  // Inches
-        int driveDistanceToDropPixel = -27;  // Inches
-        int countsToRotateToPark = -600;    // 450 is about 45 degrees
+        int driveDistanceToDropPixel = -18;  // Inches
+        int countsToRotateToPark = -700;    // 450 is about 45 degrees
         int driveDistanceToPark = 22;        // Inches
 
         // Drive forward from wall
@@ -248,15 +265,11 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
         waitForDriveToPosition();
         sleep(500);
 
-        // Rotate towards tape
-        rotate(drivePower, countsToRotateToPixel);
+        //Strafe
+        strafe(drivePower,-13 * countsToDriveOneInch);
         waitForDriveToPosition();
         sleep(500);
 
-        // Drive forward to tape
-        drive(drivePower, driveDistanceToTape * countsToDriveOneInch);
-        waitForDriveToPosition();
-        sleep(500);
 
         // Drop pixel - drop ramp, reverse intake, drive backwards
         Ramp.setPosition(pixelRampDown);
