@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -18,6 +19,7 @@ public class RobotManual_flat extends OpMode
    public DcMotor motor_LF;
    public DcMotor motor_RF;
    public DcMotor pixel_Motor;
+   TouchSensor armExtenderLimit;
    double LFrontPower;
    double RFrontPower;
    double RRearPower;
@@ -104,6 +106,8 @@ public class RobotManual_flat extends OpMode
       gripper.setDirection((Servo.Direction.FORWARD));
       gripper.setPosition(openGripperValue);
 
+      armExtenderLimit = hardwareMap.get(TouchSensor.class, "arm_limit");
+
 //      Measure_Roller = hardwareMap.get(CRServo.class, "Measure_Roller");
 //      Measure_Roller.setDirection((CRServo.Direction.FORWARD));
 
@@ -119,6 +123,14 @@ public class RobotManual_flat extends OpMode
    @Override
    public void loop()
    {
+
+      if (armExtenderLimit.isPressed()) {
+         telemetry.addLine("Sensor On");
+      }
+      else if (!armExtenderLimit.isPressed()) {
+         telemetry.addLine("Sensor Off");
+      }
+
       // The following methods are called iteratively, over and over again
       // Instead of putting all the code in loop(), we break it up into methods
       // to make the code easier to maintain. As we advance in our coding, we'll
@@ -285,11 +297,11 @@ public class RobotManual_flat extends OpMode
          pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
       }
 
-      if (gamepad2.left_stick_y > 0.05){
-         armExtender.setPower(0.1);
+      if (gamepad2.left_stick_y > 0.1){
+         armExtender.setPower(1.0);
       }
-      else if (gamepad2.left_stick_y < 0.05) {
-         armExtender.setPower(-0.1);
+      else if (gamepad2.left_stick_y < -0.1) {
+         armExtender.setPower(-1.0);
       }
       else
          armExtender.setPower(0.0);
