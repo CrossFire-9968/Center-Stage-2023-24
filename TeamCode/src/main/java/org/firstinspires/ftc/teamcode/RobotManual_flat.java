@@ -8,439 +8,265 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 @TeleOp(name = "Robot Manual Flat")
-public class RobotManual_flat extends OpMode
-{
-   public DcMotor Intake_Motor;
-   public DcMotor motor_LR;
-   public DcMotor motor_RR;
-   public DcMotor motor_LF;
-   public DcMotor motor_RF;
-   public DcMotor pixel_Motor;
-   TouchSensor armExtenderLimit;
-   double LFrontPower;
-   double RFrontPower;
-   double RRearPower;
-   double LRearPower;
-   public Servo Launcher;
-   public Servo gripper;
-   final double driveSensitivity = 0.7;
-   double bucketDownPosition = 0.85;
-   double bucketUpPosition = 0.05;
-   double bucketDumpPosition = 0.3;
-   double armSpeedUp = 0.4;
-   double armSpeedDown = 0.3;
-//   int pixelArmCountsUp = -1330;
-   int pixelArmCountsUp = 500;
-   int pixelArmCountsDown = 0;
-   double launcherMin = 0.4;
-   double launcherMax = 1.0;
-   static final double RAISEINCREMENT = 0.01;     // amount to slew servo each CYCLE_MS cycle
-   static final double DUMPINCREMENT = 0.005;     // amount to slew servo each CYCLE_MS cycle
-   double openGripperValue = 0.9;
-   double closedGripperValue = 0.5;
+public class RobotManual_flat extends OpMode {
+    public DcMotor motor_LR;
+    public DcMotor motor_RR;
+    public DcMotor motor_LF;
+    public DcMotor motor_RF;
+    public DcMotor pixel_Motor;
+    public TouchSensor armExtenderLimit;
+    double LFrontPower;
+    double RFrontPower;
+    double RRearPower;
+    double LRearPower;
+    public Servo Launcher;
+    public Servo gripper;
+    public TouchSensor gripperTouchUpper;
+    public TouchSensor gripperTouchLower;
+    final double driveSensitivity = 0.7;
+    double armSpeedUp = 0.4;
+    double armSpeedDown = 0.3;
+    int gripperArmPixelPosition = 500;
+    int gripperArmHomePosition = 0;
+    int gripperArmHangPosition = 700;
+    double launcherMin = 0.4;
+    double launcherMax = 1.0;
+    double openGripperValue = 0.9;
+    double closedGripperValue = 0.5;
+    double strafeMax = 1.0;
+    public DcMotor Hanger_Motor1;
+    public DcMotor Hanger_Motor2;
+    public CRServo armExtender;
 
-   static final int bucketDelay_MS = 20;     // period of each cycle
-   double bucketPosition = 0.0;
-   private static ElapsedTime bucketTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-   boolean wasAPressed = false;
-   boolean wasYPressed = false;
-   boolean movingArmDown = false;
-   boolean movingArmUp = false;
-   boolean movingToIncrement = false;
-   double intakePowerMin = 0.1;
-   double outtakePowerMin = -0.1;
-   double pixelIntakePower = 0.95;
-   double pixelOuttakePower = -0.6;
-   double strafeMax = 1.0;
-   public DcMotor Hanger_Motor1;
-   public DcMotor Hanger_Motor2;
-   public CRServo armExtender;
+    @Override
+    public void init() {
+        motor_LF = hardwareMap.get(DcMotor.class, "Motor_LF");
+        motor_LF.setDirection(DcMotorSimple.Direction.FORWARD);
 
-   enum bucketDestination
-   {
-      DOWN, UP, BUCKETDOWN, BUCKETUP
-   }
+        motor_RF = hardwareMap.get(DcMotor.class, "Motor_RF");
+        motor_RF.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        motor_RR = hardwareMap.get(DcMotor.class, "Motor_RR");
+        motor_RR.setDirection(DcMotorSimple.Direction.FORWARD);
 
-   @Override
-   public void init()
-   {
-//      Intake_Motor = hardwareMap.get(DcMotor.class, "Intake_Motor");
-//      Intake_Motor.setDirection(DcMotorSimple.Direction.REVERSE);
+        motor_LR = hardwareMap.get(DcMotor.class, "Motor_LR");
+        motor_LR.setDirection(DcMotorSimple.Direction.REVERSE);
 
-      motor_LF = hardwareMap.get(DcMotor.class, "Motor_LF");
-      motor_LF.setDirection(DcMotorSimple.Direction.FORWARD);
+        gripperTouchUpper = hardwareMap.get(TouchSensor.class, "gripper_Touch_Upper");
+        gripperTouchLower = hardwareMap.get(TouchSensor.class, "gripper_Touch_Lower");
 
-      motor_RF = hardwareMap.get(DcMotor.class, "Motor_RF");
-      motor_RF.setDirection(DcMotorSimple.Direction.REVERSE);
+        Hanger_Motor1 = hardwareMap.get(DcMotor.class, "Hanger_Motor1");
+        Hanger_Motor1.setDirection(DcMotorSimple.Direction.FORWARD);
 
-      motor_RR = hardwareMap.get(DcMotor.class, "Motor_RR");
-      motor_RR.setDirection(DcMotorSimple.Direction.FORWARD);
+        Hanger_Motor2 = hardwareMap.get(DcMotor.class, "Hanger_Motor2");
+        Hanger_Motor2.setDirection(DcMotorSimple.Direction.REVERSE);
 
-      motor_LR = hardwareMap.get(DcMotor.class, "Motor_LR");
-      motor_LR.setDirection(DcMotorSimple.Direction.REVERSE);
+        pixel_Motor = hardwareMap.get(DcMotor.class, "pixel_Motor");
+        pixel_Motor.setDirection(DcMotorSimple.Direction.REVERSE);
+        pixel_Motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-      Hanger_Motor1 = hardwareMap.get(DcMotor.class, "Hanger_Motor1");
-      Hanger_Motor1.setDirection(DcMotorSimple.Direction.FORWARD);
+        armExtender = hardwareMap.get(CRServo.class, "arm_extend_servo");
+        armExtender.setDirection(CRServo.Direction.FORWARD);
+        armExtender.setPower(0.0);
 
-      Hanger_Motor2 = hardwareMap.get(DcMotor.class, "Hanger_Motor2");
-      Hanger_Motor2.setDirection(DcMotorSimple.Direction.FORWARD);
+        Launcher = hardwareMap.get(Servo.class, "Launcher");
+        Launcher.setDirection(Servo.Direction.REVERSE);
+        Launcher.setPosition(launcherMin);
 
-      pixel_Motor = hardwareMap.get(DcMotor.class, "pixel_Motor");
-      pixel_Motor.setDirection(DcMotorSimple.Direction.REVERSE);
-      pixel_Motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        gripper = hardwareMap.get(Servo.class, "Gripper");
+        gripper.setDirection((Servo.Direction.FORWARD));
+        gripper.setPosition(openGripperValue);
 
-      armExtender = hardwareMap.get(CRServo.class, "arm_extend_servo");
-      armExtender.setDirection(CRServo.Direction.FORWARD);
-      armExtender.setPower(0.0);
-//      bucketPosition = bucketDownPosition;
+        armExtenderLimit = hardwareMap.get(TouchSensor.class, "arm_limit");
 
-      Launcher = hardwareMap.get(Servo.class, "Launcher");
-      Launcher.setDirection(Servo.Direction.REVERSE);
-      Launcher.setPosition(launcherMin);
+        setAllMecanumPowers(0.0);
+        pixel_Motor.setPower(0.0);
+        Hanger_Motor1.setPower(0.0);
+        Hanger_Motor2.setPower(0.0);
 
-      gripper = hardwareMap.get(Servo.class, "Gripper");
-      gripper.setDirection((Servo.Direction.FORWARD));
-      gripper.setPosition(openGripperValue);
+        telemetry.addLine("End of initializations");
+        telemetry.update();
+    }
 
-      armExtenderLimit = hardwareMap.get(TouchSensor.class, "arm_limit");
+    @Override
+    public void loop() {
 
-//      Measure_Roller = hardwareMap.get(CRServo.class, "Measure_Roller");
-//      Measure_Roller.setDirection((CRServo.Direction.FORWARD));
+        if (armExtenderLimit.isPressed()) {
+            telemetry.addLine("Sensor On");
+        }
+        else if (!armExtenderLimit.isPressed()) {
+            telemetry.addLine("Sensor Off");
+        }
 
-      setAllMecanumPowers(0.0);
-      pixel_Motor.setPower(0.0);
-      Hanger_Motor1.setPower(0.0);
-      Hanger_Motor2.setPower(0.0);
+        if (gripperTouchUpper.isPressed()) {
+            telemetry.addLine("Pressed");
+        }
+        else if (!gripperTouchUpper.isPressed()) {
+            telemetry.addLine("Not Pressed");
+        }
 
-      telemetry.addLine("End of initializations");
-      telemetry.update();
-   }
+        if (gripperTouchLower.isPressed()) {
+            telemetry.addLine("Pressed");
+        }
+        else if (!gripperTouchLower.isPressed()) {
+            telemetry.addLine("Not Pressed");
+        }
 
-   @Override
-   public void loop()
-   {
+        // The following methods are called iteratively, over and over again
+        // Instead of putting all the code in loop(), we break it up into methods
+        // to make the code easier to maintain. As we advance in our coding, we'll
+        // put these into different classes.
 
-      if (armExtenderLimit.isPressed()) {
-         telemetry.addLine("Sensor On");
-      }
-      else if (!armExtenderLimit.isPressed()) {
-         telemetry.addLine("Sensor Off");
-      }
+        manualDrive();      // Operates the mechanum drive motors
+        gripperArmControl();  // Operates the pixel arm motor and bucket servo
+        launchDrone();      // Operates the drone launcher servo
+        gripperControl();        // Operates the intake motor and ramp
+        hangerControl();    // Operates the hanger motors and servo for lifting the robot
 
-      // The following methods are called iteratively, over and over again
-      // Instead of putting all the code in loop(), we break it up into methods
-      // to make the code easier to maintain. As we advance in our coding, we'll
-      // put these into different classes.
-
-      manualDrive();      // Operates the mechanum drive motors
-      pixelArmControl();  // Operates the pixel arm motor and bucket servo
-      launchDrone();      // Operates the drone launcher servo
-      gripperControl();        // Operates the intake motor and ramp
-      hangerControl();    // Operates the hanger motors and servo for lifting the robot
-
-      // Stuff we want to see during game play
-//      telemetry.addData("bucketPosition: ", armExtender.getPosition());
-      telemetry.addData("bucket timer", bucketTimer.time());
-      telemetry.addData("PixelArm", pixel_Motor.getCurrentPosition());
-      telemetry.update();
-   }
+        // Stuff we want to see during game play
+        telemetry.addData("PixelArm", pixel_Motor.getCurrentPosition());
+        telemetry.update();
+    }
 
 
-   /**
-    * <p> Method operate the launch mechanism used during teleop to release the drone </p>
-    */
-   public void launchDrone()
-   {
-      if (gamepad2.right_bumper)
-      {
-         Launcher.setPosition(launcherMax);
-      }
-   }
+    /**
+     * <p> Method operate the launch mechanism used during teleop to release the drone </p>
+     */
+    public void launchDrone() {
+        if (gamepad2.right_bumper) {
+            Launcher.setPosition(launcherMax);
+        }
+    }
 
 
-   /**
-    * <p> Method operates the actuators for picking up a pixel off the floor. When operated
-    * the intake ramp will lower to the floor and the motor will rotate the sweeper. The
-    * pixel is then projected into the pixel arm bucket. The motor can be operated in reverse
-    * in case the pixel needs to be ejected.</p>
-    */
-//   public void runIntake()
-//   {
-//      double intakePower = -gamepad2.left_stick_y;
-//
-//      intakePower = Range.clip(intakePower, pixelOuttakePower, pixelIntakePower);
-//
-//      // Bring pixel into bucket
-//      if (intakePower >= intakePowerMin)
-//      {
-//         Intake_Motor.setPower(intakePower);
-//         gripper.setPosition(openGripperValue);
-//      }
-//      // Expel pixel out of robot
-//      else if (intakePower <= outtakePowerMin)
-//      {
-//         Intake_Motor.setPower(intakePower);
-//         gripper.setPosition(openGripperValue);
-//      }
-//      else
-//      {
-//         Intake_Motor.setPower(0.0);
-//         gripper.setPosition(closedGripperValue);
-//      }
-//
-//      telemetry.addData("intakePower", intakePower);
-//   }
+    /**
+     * <p> Method operates the drivetrain motors </p>
+     */
+    public void manualDrive() {
+        double turnSpeed = gamepad1.right_stick_x;
+        double driveSpeed = gamepad1.left_stick_y;
+        double strafeSpeed = 0.0;
 
-   public void gripperControl() {
-      double zeroThreshold = 0.1;
+        if (gamepad1.left_bumper) {
+            strafeSpeed = -strafeMax;
+        }
+        else if (gamepad1.right_bumper) {
+            strafeSpeed = strafeMax;
+        }
 
-      if (gamepad2.right_trigger > zeroThreshold){
-         gripper.setPosition(openGripperValue);
-      }
-      else if (gamepad2.left_trigger > zeroThreshold) {
-         gripper.setPosition(closedGripperValue);
-      }
-   }
+        // Raw drive power for each motor from joystick inputs
+        LFrontPower = driveSpeed - turnSpeed - strafeSpeed;
+        RFrontPower = driveSpeed + turnSpeed + strafeSpeed;
+        RRearPower = driveSpeed + turnSpeed - strafeSpeed;
+        LRearPower = driveSpeed - turnSpeed + strafeSpeed;
 
+        //        // Cubing power values to give finer control at slow speeds
+//      LFrontPower = Math.pow(LFrontPower, 1);
+//      RFrontPower = Math.pow(RFrontPower, 1);
+//      RRearPower = Math.pow(RRearPower, 1);
+//      LRearPower = Math.pow(LRearPower, 1);
 
-   /**
-    * <p> Method operates the drivetrain motors </p>
-    */
-   public void manualDrive()
-   {
-      double turnSpeed = gamepad1.right_stick_x;
-      double driveSpeed = gamepad1.left_stick_y;
-      double strafeSpeed = 0.0;
+        double max = 1.0;
+        max = Math.max(max, Math.abs(LFrontPower));
+        max = Math.max(max, Math.abs(RFrontPower));
+        max = Math.max(max, Math.abs(RRearPower));
+        max = Math.max(max, Math.abs(LRearPower));
 
-      if (gamepad1.left_bumper)
-      {
-         strafeSpeed = -strafeMax;
-      }
-      else if (gamepad1.right_bumper)
-      {
-         strafeSpeed = strafeMax;
-      }
+        // Ratio drive powers
+        LFrontPower = (LFrontPower / max);
+        RFrontPower = (RFrontPower / max);
+        RRearPower = (RRearPower / max);
+        LRearPower = (LRearPower / max);
 
-      // Raw drive power for each motor from joystick inputs
-      LFrontPower = driveSpeed - turnSpeed - strafeSpeed;
-      RFrontPower = driveSpeed + turnSpeed + strafeSpeed;
-      RRearPower = driveSpeed + turnSpeed - strafeSpeed;
-      LRearPower = driveSpeed - turnSpeed + strafeSpeed;
+        telemetry.addData("Max: ", max);
 
-      //        // Cubing power values to give finer control at slow speeds
-      LFrontPower = Math.pow(LFrontPower, 3);
-      RFrontPower = Math.pow(RFrontPower, 3);
-      RRearPower = Math.pow(RRearPower, 3);
-      LRearPower = Math.pow(LRearPower, 3);
-
-      // Find max drive power
-      double max = 1.0;
-      max = Math.max(max, Math.abs(LFrontPower));
-      max = Math.max(max, Math.abs(RFrontPower));
-      max = Math.max(max, Math.abs(RRearPower));
-      max = Math.max(max, Math.abs(LRearPower));
-
-      // Ratio drive powers
-      LFrontPower = (LFrontPower / max);
-      RFrontPower = (RFrontPower / max);
-      RRearPower = (RRearPower / max);
-      LRearPower = (LRearPower / max);
-
-      telemetry.addData("Max: ", max);
-
-      // Set motor speed
-      setEachMecanumPower(LFrontPower, RFrontPower, RRearPower, LRearPower);
-   }
+        // Set motor speed
+        setEachMecanumPower(LFrontPower, RFrontPower, RRearPower, LRearPower);
+    }
 
 
-   // Set all mecanum powers
-   protected void setAllMecanumPowers(double power)
-   {
-      motor_LF.setPower(power);
-      motor_RF.setPower(power);
-      motor_RR.setPower(power);
-      motor_LR.setPower(power);
-   }
+    // Set all mecanum powers
+    protected void setAllMecanumPowers(double power) {
+        motor_LF.setPower(power);
+        motor_RF.setPower(power);
+        motor_RR.setPower(power);
+        motor_LR.setPower(power);
+    }
 
 
-   protected void setEachMecanumPower(double LFpower, double RFpower, double RRpower, double LRpower)
-   {
-      motor_LF.setPower(driveSensitivity * LFpower);
-      motor_RF.setPower(driveSensitivity * RFpower);
-      motor_RR.setPower(driveSensitivity * RRpower);
-      motor_LR.setPower(driveSensitivity * LRpower);
-   }
+    protected void setEachMecanumPower(double LFpower, double RFpower, double RRpower, double LRpower) {
+        motor_LF.setPower(driveSensitivity * LFpower);
+        motor_RF.setPower(driveSensitivity * RFpower);
+        motor_RR.setPower(driveSensitivity * RRpower);
+        motor_LR.setPower(driveSensitivity * LRpower);
+    }
 
 
-   protected void pixelArmControl()
-   {
-      // Kicks off the bucket rotation but only when the button is first switches
-      // from unpressed (false) to pressed (true).
-      if (gamepad2.a)// && !wasAPressed)
-      {
-//         movingArmDown = true;
-//         movingArmUp = false;
-         pixel_Motor.setPower(armSpeedDown);
-         pixel_Motor.setTargetPosition(pixelArmCountsDown);
-         pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-      }
-      else if (gamepad2.y)// && !wasYPressed)
-      {
-//         movingArmUp = true;
-//         movingArmDown = false;
-         pixel_Motor.setPower(armSpeedUp);
-         pixel_Motor.setTargetPosition(pixelArmCountsUp);
-         pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-      }
+    public void gripperControl() {
+        double zeroThreshold = 0.1;
 
-      if (gamepad2.left_stick_y > 0.1){
-         armExtender.setPower(1.0);
-      }
-      else if (gamepad2.left_stick_y < -0.1) {
-         armExtender.setPower(-1.0);
-      }
-      else
-         armExtender.setPower(0.0);
-
-      //        if(gamepad2.b)
-      //        {
-      //            bucket.setPosition(0.5);
-      //        }
+        if (gamepad2.left_trigger > zeroThreshold) {
+            gripper.setPosition(openGripperValue);
+        }
+        else if (gamepad2.right_trigger > zeroThreshold) {
+            gripper.setPosition(closedGripperValue);
+        }
+    }
 
 
-      // When you press gamepad input the arm goes to up position.
+    protected void gripperArmControl() {
+        double threshold = 0.1;
+        double armExtenderMaxPower = 1.0;
 
+        // Kicks off the bucket rotation but only when the button is first switches
+        // from unpressed (false) to pressed (true).
+        if (gamepad2.a) {
+            pixel_Motor.setPower(armSpeedDown);
+            pixel_Motor.setTargetPosition(gripperArmHomePosition);
+            pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        }
+        else if (gamepad2.y) {
+            pixel_Motor.setPower(armSpeedUp);
+            pixel_Motor.setTargetPosition(gripperArmPixelPosition);
+            pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        }
+        else if (gamepad2.x) {
+            pixel_Motor.setPower(armSpeedUp);
+            pixel_Motor.setTargetPosition(gripperArmHangPosition);
+            pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        }
+        if (gamepad2.left_stick_y > threshold) {
+            armExtender.setPower(armExtenderMaxPower);
+        }
+        else if (gamepad2.left_stick_y < -threshold) {
+            armExtender.setPower(-armExtenderMaxPower);
+        }
+        else
+            armExtender.setPower(0.0);
+    }
 
-//      // Code called each loop make the bucket move to the next increment in rotation
-//      // The code has a timer so we can slow down how fast the bucket servo rotates.
-//      if (movingArmDown)
-//      {
-//         rotateBucketToPosition(bucketDestination.DOWN);
-//      }
-//      else if (movingArmUp)
-//      {
-//         rotateBucketToPosition(bucketDestination.UP);
-//      }
-//      else if (gamepad2.b)
-//      {
-//         rotateBucketToPosition(bucketDestination.BUCKETDOWN);
-//      }
-//      else if (gamepad2.x)
-//      {
-//         rotateBucketToPosition(bucketDestination.BUCKETUP);
-//      }
+    /**
+     * <p>Method operates the hanger system which uses a servo to deploy the lift cable and
+     * two motors to winch the robot to a hanging position.</p>
+     */
 
-      // Retain the last state of the bucket rotation input so we can use it for assessing
-      // the transition from false to true (on press). You could also use it for determining
-      // on release transitions if you want as well.
-//      wasAPressed = gamepad2.a;
-//      wasYPressed = gamepad2.y;
-   }
+    public void hangerControl() {
+        // Winch the robot up off the floor
+        if (gamepad2.dpad_right) {
+            Hanger_Motor1.setPower(-1.0);
+            Hanger_Motor2.setPower(1.0);
+        }
 
-
-//   private void rotateBucketToPosition(bucketDestination destination)
-//   {
-//      if (!movingToIncrement)
-//      {
-//         // Initially set this to true, but later if we find the bucket is at the travel limit
-//         // set it to false as we have already reached the desire destination.
-//         movingToIncrement = true;
-//
-//         // Increment or decrement the bucket position based on if we commanded
-//         // it to rotate to the ramp or dump positions.
-//         switch (destination)
-//         {
-//            case DOWN:
-//               bucketPosition += RAISEINCREMENT;
-//               if (bucketPosition >= bucketDownPosition)
-//               {
-//                  movingArmDown = false;
-//                  movingToIncrement = false;
-//               }
-//               break;
-//            case UP:
-//               bucketPosition -= RAISEINCREMENT;
-//               if (bucketPosition <= bucketUpPosition)
-//               {
-//                  movingArmUp = false;
-//                  movingToIncrement = false;
-//               }
-//               break;
-//            case BUCKETDOWN:
-//               if (bucketPosition <= bucketDumpPosition)
-//               {
-//                  bucketPosition += DUMPINCREMENT;
-//               }
-//               break;
-//            case BUCKETUP:
-//               if (bucketPosition >= bucketUpPosition)
-//               {
-//                  bucketPosition -= DUMPINCREMENT;
-//               }
-//               break;
-//         }
-//
-//         telemetry.addData("bucketPosition: ", bucketUpPosition);
-//
-//         // Only move to the next increment in position if the bucket hasn't reached the desired position
-//         if (movingToIncrement)
-//         {
-//            Range.clip(bucketPosition, bucketDumpPosition, bucketDownPosition);
-//            armExtender.setPosition(bucketPosition);
-//            bucketTimer.reset();
-//         }
-//      }
-//      // Wait to rotate the servo to the next increment for teh desired amount of time. The longer the
-//      // delay between increments, the slower the bucket will rotate.
-//      else if (bucketTimer.time() >= bucketDelay_MS)
-//      {
-//         movingToIncrement = false;
-//      }
-//   }
-
-
-   /**
-    * <p>Method operates the hanger system which uses a servo to deploy the lift cable and
-    * two motors to winch the robot to a hanging position.</p>
-    */
-   public void hangerControl()
-   {
-      // Winch the robot up off the floor
-      if (gamepad2.dpad_right)
-      {
-         Hanger_Motor1.setPower(-1.0);
-         Hanger_Motor2.setPower(1.0);
-      }
-
-      // Lower the robot toward the floor
-      else if (gamepad2.dpad_left)
-      {
-         Hanger_Motor1.setPower(1.0);
-         Hanger_Motor2.setPower(-1.0);
-      }
-      else
-      {
-         Hanger_Motor1.setPower(0.0);
-         Hanger_Motor2.setPower(0.0);
-      }
-
-//      // Deploys the winch hook up
-//      if (gamepad2.dpad_up)
-//      {
-//         Measure_Roller.setPower(1);
-//      }
-//      else if (gamepad2.dpad_down)
-//      {
-//         Measure_Roller.setPower(-1);
-//      }
-//      else
-//      {
-//         Measure_Roller.setPower(0);
-//
-//      }
-   }
+        // Lower the robot toward the floor
+        else if (gamepad2.dpad_left) {
+            Hanger_Motor1.setPower(1.0);
+            Hanger_Motor2.setPower(-1.0);
+        }
+        else {
+            Hanger_Motor1.setPower(0.0);
+            Hanger_Motor2.setPower(0.0);
+        }
+    }
 }
