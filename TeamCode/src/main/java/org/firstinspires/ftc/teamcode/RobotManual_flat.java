@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -39,6 +41,9 @@ public class RobotManual_flat extends OpMode {
     public DcMotor Hanger_Motor1;
     public DcMotor Hanger_Motor2;
     public CRServo armExtender;
+    public RevBlinkinLedDriver blinkin;
+    public ElapsedTime timer = new ElapsedTime();
+    public boolean playWasPressed = false;
 
     @Override
     public void init() {
@@ -81,6 +86,9 @@ public class RobotManual_flat extends OpMode {
 
         armExtenderLimit = hardwareMap.get(TouchSensor.class, "arm_limit");
 
+        blinkin = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
+        blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
+
         setAllMecanumPowers(0.0);
         pixel_Motor.setPower(0.0);
         Hanger_Motor1.setPower(0.0);
@@ -92,6 +100,10 @@ public class RobotManual_flat extends OpMode {
 
     @Override
     public void loop() {
+        if (!playWasPressed) {
+            timer.reset();
+            playWasPressed = true;
+        }
 
         if (armExtenderLimit.isPressed()) {
             telemetry.addLine("Sensor On");
@@ -100,19 +112,27 @@ public class RobotManual_flat extends OpMode {
             telemetry.addLine("Sensor Off");
         }
 
-        if (gripperTouchUpper.isPressed()) {
-            telemetry.addLine("Pressed");
+//        if (gripperTouchUpper.isPressed()) {
+//            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
+//        }
+//        else if (gripperTouchLower.isPressed()) {
+//            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
+//        }
+//        else if (!gripperTouchUpper.isPressed()) {
+//            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
+//        }
+
+        if (timer.seconds() < 5) {
+            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.YELLOW);
         }
-        else if (!gripperTouchUpper.isPressed()) {
-            telemetry.addLine("Not Pressed");
+        else if (timer.seconds() >= 5 && timer.seconds() < 10) {
+            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
+        }
+        else if (timer.seconds() >= 10) {
+            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.DARK_RED);
         }
 
-        if (gripperTouchLower.isPressed()) {
-            telemetry.addLine("Pressed");
-        }
-        else if (!gripperTouchLower.isPressed()) {
-            telemetry.addLine("Not Pressed");
-        }
+        telemetry.addData("Time: ", timer.seconds());
 
         // The following methods are called iteratively, over and over again
         // Instead of putting all the code in loop(), we break it up into methods
