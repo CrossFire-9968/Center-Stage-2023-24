@@ -42,7 +42,7 @@ public class RobotManual_flat extends OpMode {
     public DcMotor Hanger_Motor2;
     public CRServo armExtender;
     public RevBlinkinLedDriver blinkin;
-    public ElapsedTime timer = new ElapsedTime();
+    public ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
     public boolean playWasPressed = false;
 
     @Override
@@ -82,12 +82,12 @@ public class RobotManual_flat extends OpMode {
 
         gripper = hardwareMap.get(Servo.class, "Gripper");
         gripper.setDirection((Servo.Direction.FORWARD));
-        gripper.setPosition(openGripperValue);
+        gripper.setPosition(closedGripperValue);
 
         armExtenderLimit = hardwareMap.get(TouchSensor.class, "arm_limit");
 
         blinkin = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
-        blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
+        blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
 
         setAllMecanumPowers(0.0);
         pixel_Motor.setPower(0.0);
@@ -105,31 +105,26 @@ public class RobotManual_flat extends OpMode {
             playWasPressed = true;
         }
 
-        if (armExtenderLimit.isPressed()) {
-            telemetry.addLine("Sensor On");
-        }
-        else if (!armExtenderLimit.isPressed()) {
-            telemetry.addLine("Sensor Off");
-        }
-
-//        if (gripperTouchUpper.isPressed()) {
-//            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
+//        if (armExtenderLimit.isPressed()) {
+//            telemetry.addLine("Sensor On");
 //        }
-//        else if (gripperTouchLower.isPressed()) {
-//            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
-//        }
-//        else if (!gripperTouchUpper.isPressed()) {
-//            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
+//        else if (!armExtenderLimit.isPressed()) {
+//            telemetry.addLine("Sensor Off");
 //        }
 
-        if (timer.seconds() < 5) {
-            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.YELLOW);
-        }
-        else if (timer.seconds() >= 5 && timer.seconds() < 10) {
+        if (gripperTouchUpper.isPressed()) {
+            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);        }
+        else if (gripperTouchLower.isPressed()) {
             blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
         }
-        else if (timer.seconds() >= 10) {
-            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.DARK_RED);
+        else if (timer.seconds() >= 90 && timer.seconds() < 120) {
+            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.HEARTBEAT_WHITE);
+        }
+        else if (timer.seconds() >= 120) {
+            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.HEARTBEAT_RED);
+        }
+        else {
+            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
         }
 
         telemetry.addData("Time: ", timer.seconds());
