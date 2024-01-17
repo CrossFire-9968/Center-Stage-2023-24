@@ -6,13 +6,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name = "Robot Manual Flat")
-public class RobotManual_flat extends OpMode {
+public class RobotManual extends OpMode {
+    public DroneLauncher drone;
     public DcMotor motor_LR;
     public DcMotor motor_RR;
     public DcMotor motor_LF;
@@ -23,20 +23,17 @@ public class RobotManual_flat extends OpMode {
     double RFrontPower;
     double RRearPower;
     double LRearPower;
-    public Servo Launcher;
     public Servo gripper;
     public TouchSensor gripperTouchUpper;
     public TouchSensor gripperTouchLower;
     final double driveSensitivity = 0.7;
     double armSpeedUp = 0.4;
-    double armSpeedDown = 0.3;
+    double armSpeedDown = 0.2;
     int gripperArmPixelPosition = 500;
     int gripperArmHomePosition = 0;
     int gripperArmHangPosition = 700;
-    double launcherMin = 0.4;
-    double launcherMax = 1.0;
     double openGripperValue = 0.9;
-    double closedGripperValue = 0.5;
+    double closedGripperValue = 0.45;
     double strafeMax = 1.0;
     public DcMotor Hanger_Motor1;
     public DcMotor Hanger_Motor2;
@@ -47,6 +44,8 @@ public class RobotManual_flat extends OpMode {
 
     @Override
     public void init() {
+        drone.init(hardwareMap);
+
         motor_LF = hardwareMap.get(DcMotor.class, "Motor_LF");
         motor_LF.setDirection(DcMotorSimple.Direction.FORWARD);
 
@@ -75,10 +74,6 @@ public class RobotManual_flat extends OpMode {
         armExtender = hardwareMap.get(CRServo.class, "arm_extend_servo");
         armExtender.setDirection(CRServo.Direction.FORWARD);
         armExtender.setPower(0.0);
-
-        Launcher = hardwareMap.get(Servo.class, "Launcher");
-        Launcher.setDirection(Servo.Direction.REVERSE);
-        Launcher.setPosition(launcherMin);
 
         gripper = hardwareMap.get(Servo.class, "Gripper");
         gripper.setDirection((Servo.Direction.FORWARD));
@@ -134,9 +129,10 @@ public class RobotManual_flat extends OpMode {
         // to make the code easier to maintain. As we advance in our coding, we'll
         // put these into different classes.
 
+        drone.control(gamepad2);
+
         manualDrive();      // Operates the mechanum drive motors
         gripperArmControl();  // Operates the pixel arm motor and bucket servo
-        launchDrone();      // Operates the drone launcher servo
         gripperControl();        // Operates the intake motor and ramp
         hangerControl();    // Operates the hanger motors and servo for lifting the robot
 
@@ -144,17 +140,6 @@ public class RobotManual_flat extends OpMode {
         telemetry.addData("PixelArm", pixel_Motor.getCurrentPosition());
         telemetry.update();
     }
-
-
-    /**
-     * <p> Method operate the launch mechanism used during teleop to release the drone </p>
-     */
-    public void launchDrone() {
-        if (gamepad2.right_bumper) {
-            Launcher.setPosition(launcherMax);
-        }
-    }
-
 
     /**
      * <p> Method operates the drivetrain motors </p>
