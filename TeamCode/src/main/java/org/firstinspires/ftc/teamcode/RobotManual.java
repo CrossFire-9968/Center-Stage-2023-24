@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @TeleOp(name = "Robot Manual Flat")
 public class RobotManual extends OpMode {
     public DroneLauncher drone;
+    public GripperArm gripperArm;
     public DcMotor motor_LR;
     public DcMotor motor_RR;
     public DcMotor motor_LF;
@@ -20,6 +21,7 @@ public class RobotManual extends OpMode {
     public DcMotor pixel_Motor;
     public TouchSensor gripperTouchUpper;
     public TouchSensor gripperTouchLower;
+    final double driveSensitivity = 0.7;
     double LFrontPower;
     double RFrontPower;
     double RRearPower;
@@ -34,6 +36,8 @@ public class RobotManual extends OpMode {
     @Override
     public void init() {
         drone.init(hardwareMap);
+
+        gripperArm.init(hardwareMap);
 
         motor_LF = hardwareMap.get(DcMotor.class, "Motor_LF");
         motor_LF.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -106,10 +110,11 @@ public class RobotManual extends OpMode {
         // put these into different classes.
 
         drone.control(gamepad2);
+        gripperArm.triggerControl(gamepad2);
+        gripperArm.armControl(gamepad2);
 
         manualDrive();      // Operates the mechanum drive motors
-        gripperArmControl();  // Operates the pixel arm motor and bucket servo
-        gripperControl();        // Operates the intake motor and ramp
+
         hangerControl();    // Operates the hanger motors and servo for lifting the robot
 
         // Stuff we want to see during game play
@@ -177,50 +182,6 @@ public class RobotManual extends OpMode {
         motor_RF.setPower(driveSensitivity * RFpower);
         motor_RR.setPower(driveSensitivity * RRpower);
         motor_LR.setPower(driveSensitivity * LRpower);
-    }
-
-
-    public void gripperControl() {
-        double zeroThreshold = 0.1;
-
-        if (gamepad2.left_trigger > zeroThreshold) {
-            gripper.setPosition(openGripperValue);
-        }
-        else if (gamepad2.right_trigger > zeroThreshold) {
-            gripper.setPosition(closedGripperValue);
-        }
-    }
-
-
-    protected void gripperArmControl() {
-        double threshold = 0.1;
-        double armExtenderMaxPower = 1.0;
-
-        // Kicks off the bucket rotation but only when the button is first switches
-        // from unpressed (false) to pressed (true).
-        if (gamepad2.a) {
-            pixel_Motor.setPower(armSpeedDown);
-            pixel_Motor.setTargetPosition(gripperArmHomePosition);
-            pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        }
-        else if (gamepad2.y) {
-            pixel_Motor.setPower(armSpeedUp);
-            pixel_Motor.setTargetPosition(gripperArmPixelPosition);
-            pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        }
-        else if (gamepad2.x) {
-            pixel_Motor.setPower(armSpeedUp);
-            pixel_Motor.setTargetPosition(gripperArmHangPosition);
-            pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        }
-        if (gamepad2.left_stick_y > threshold) {
-            armExtender.setPower(armExtenderMaxPower);
-        }
-        else if (gamepad2.left_stick_y < -threshold) {
-            armExtender.setPower(-armExtenderMaxPower);
-        }
-        else
-            armExtender.setPower(0.0);
     }
 
     /**

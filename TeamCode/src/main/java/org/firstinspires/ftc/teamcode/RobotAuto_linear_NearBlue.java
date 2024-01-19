@@ -59,12 +59,12 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
         motor_LR.setDirection(DcMotorSimple.Direction.FORWARD);
         motor_LR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        Intake_Motor = hardwareMap.get(DcMotor.class, "Intake_Motor");
-        Intake_Motor.setDirection(DcMotorSimple.Direction.REVERSE);
+//        Intake_Motor = hardwareMap.get(DcMotor.class, "Intake_Motor");
+//        Intake_Motor.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        Ramp = hardwareMap.get(Servo.class, "Ramp");
-        Ramp.setDirection((Servo.Direction.FORWARD));
-        Ramp.setPosition(pixelRampUp);
+//        Ramp = hardwareMap.get(Servo.class, "Ramp");
+//        Ramp.setDirection((Servo.Direction.FORWARD));
+//        Ramp.setPosition(pixelRampUp);
 
         setMecanumPowers(0.0);
 
@@ -78,48 +78,49 @@ public class RobotAuto_linear_NearBlue extends LinearOpMode
             while(!isMotionComplete()){
                 idle();
             }
+            strafe(0.5,40*39);
+//            // Turn toward pixel location
+//            if (pixelLocation == spikeLocation.RIGHT){
+//                rotate(DriveSpeed, TurnDegrees);
+//
+//                while(!isMotionComplete()){
+//                    idle();
+//                }
+//                sleep(1000);
+//            }
+//            else if (pixelLocation == spikeLocation.LEFT){
+//                rotate(DriveSpeed, -TurnDegrees);
 
-            // Turn toward pixel location
-            if (pixelLocation == spikeLocation.RIGHT){
-                rotate(DriveSpeed, TurnDegrees);
-                
                 while(!isMotionComplete()){
                     idle();
                 }
                 sleep(1000);
             }
-            else if (pixelLocation == spikeLocation.LEFT){
-                rotate(DriveSpeed, -TurnDegrees);
-
-                while(!isMotionComplete()){
-                    idle();
-                }
-                sleep(1000);
-            }
 
 
 
-            Ramp.setPosition(pixelRampDown);
-            Intake_Motor.setPower(-0.3);
-            drive(DriveSpeed, BackDriveDistance * DriveCounts);
-
-            while(!isMotionComplete()){
-                idle();}
-
-            sleep(1000);
-            Intake_Motor.setPower(0.0);
-
-
-            Ramp.setPosition(pixelRampUp);
-            strafe(0.5, -48*40);
-
-            while(!isMotionComplete()){
-                idle();}
-
-            isAutoComplete = true;
+//            Ramp.setPosition(pixelRampDown);
+//            Intake_Motor.setPower(-0.3);
+//            drive(DriveSpeed, BackDriveDistance * DriveCounts);
+//
+//            while(!isMotionComplete()){
+//                idle();}
+//
+//            sleep(1000);
+//            Intake_Motor.setPower(0.0);
+//
+//
+//            Ramp.setPosition(pixelRampUp);
+//            strafe(0.5, -48*40);
+//
+//            while(!isMotionComplete()){
+//                idle();}
+//
+//            isAutoComplete = true;
         }
 
-    }
+
+
 
 // 32 counts per inch est.
     public void drive(double power, int distance) {
