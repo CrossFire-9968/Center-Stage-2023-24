@@ -18,26 +18,15 @@ public class RobotManual extends OpMode {
     public DcMotor motor_LF;
     public DcMotor motor_RF;
     public DcMotor pixel_Motor;
-    public TouchSensor armExtenderLimit;
+    public TouchSensor gripperTouchUpper;
+    public TouchSensor gripperTouchLower;
     double LFrontPower;
     double RFrontPower;
     double RRearPower;
     double LRearPower;
-    public Servo gripper;
-    public TouchSensor gripperTouchUpper;
-    public TouchSensor gripperTouchLower;
-    final double driveSensitivity = 0.7;
-    double armSpeedUp = 0.4;
-    double armSpeedDown = 0.2;
-    int gripperArmPixelPosition = 500;
-    int gripperArmHomePosition = 0;
-    int gripperArmHangPosition = 700;
-    double openGripperValue = 0.9;
-    double closedGripperValue = 0.45;
     double strafeMax = 1.0;
     public DcMotor Hanger_Motor1;
     public DcMotor Hanger_Motor2;
-    public CRServo armExtender;
     public RevBlinkinLedDriver blinkin;
     public ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
     public boolean playWasPressed = false;
@@ -58,9 +47,6 @@ public class RobotManual extends OpMode {
         motor_LR = hardwareMap.get(DcMotor.class, "Motor_LR");
         motor_LR.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        gripperTouchUpper = hardwareMap.get(TouchSensor.class, "gripper_Touch_Upper");
-        gripperTouchLower = hardwareMap.get(TouchSensor.class, "gripper_Touch_Lower");
-
         Hanger_Motor1 = hardwareMap.get(DcMotor.class, "Hanger_Motor1");
         Hanger_Motor1.setDirection(DcMotorSimple.Direction.FORWARD);
 
@@ -70,16 +56,6 @@ public class RobotManual extends OpMode {
         pixel_Motor = hardwareMap.get(DcMotor.class, "pixel_Motor");
         pixel_Motor.setDirection(DcMotorSimple.Direction.REVERSE);
         pixel_Motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        armExtender = hardwareMap.get(CRServo.class, "arm_extend_servo");
-        armExtender.setDirection(CRServo.Direction.FORWARD);
-        armExtender.setPower(0.0);
-
-        gripper = hardwareMap.get(Servo.class, "Gripper");
-        gripper.setDirection((Servo.Direction.FORWARD));
-        gripper.setPosition(closedGripperValue);
-
-        armExtenderLimit = hardwareMap.get(TouchSensor.class, "arm_limit");
 
         blinkin = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
         blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
