@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -33,6 +34,12 @@ public class GripperArm {
         gripper = hwMap.get(Servo.class, "Gripper");
         gripper.setDirection((Servo.Direction.FORWARD));
         gripper.setPosition(closedGripperValue);
+
+        pixel_Motor = hwMap.get(DcMotor.class, "pixel_Motor");
+        pixel_Motor.setDirection(DcMotorSimple.Direction.REVERSE);
+        pixel_Motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        pixel_Motor.setPower(0.0);
 
         armExtenderLimit = hwMap.get(TouchSensor.class, "arm_limit");
     }
@@ -78,4 +85,10 @@ public class GripperArm {
         else
             armExtender.setPower(0.0);
     }
+//            if (armExtenderLimit.isPressed()) {
+//            telemetry.addLine("Sensor On");
+//        }
+//        else if (!armExtenderLimit.isPressed()) {
+//            telemetry.addLine("Sensor Off");
+//        }
 }
