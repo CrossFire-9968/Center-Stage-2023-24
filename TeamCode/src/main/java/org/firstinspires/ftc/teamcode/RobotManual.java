@@ -5,13 +5,14 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+
 @TeleOp(name = "Robot Manual")
 public class RobotManual extends OpMode {
-    public DroneLauncher drone;
-    public GripperArm gripperArm;
-    public Hang hang;
-    public Blinkin blinkin;
-    public MecanumDrive mecanum;
+    public DroneLauncher drone = new DroneLauncher();
+    public GripperArm gripperArm = new GripperArm();
+    public Hang hang = new Hang();
+    public Blinkin blinkin = new Blinkin();
+    public MecanumDrive mecanum =  new MecanumDrive();
     public boolean playWasPressed = false;
     public ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
 

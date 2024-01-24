@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class DroneLauncher {
-
     public Servo Launcher;
     double launcherMin = 0.4;
     double launcherMax = 1.0;
