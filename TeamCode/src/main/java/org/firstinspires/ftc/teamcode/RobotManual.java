@@ -58,8 +58,9 @@ public class RobotManual extends OpMode {
         // put these into different classes.
         mecanum.drive(gamepad1);
         drone.control(gamepad2);
-        gripperArm.triggerControl(gamepad2);
+        gripperArm.gripperControl(gamepad2);
         gripperArm.armControl(gamepad2);
+        gripperArm.armExtension(gamepad2);
         hang.hangerControl(gamepad2);
     }
 }

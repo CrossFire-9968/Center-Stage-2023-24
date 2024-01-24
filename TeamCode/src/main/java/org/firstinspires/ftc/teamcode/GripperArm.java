@@ -44,7 +44,7 @@ public class GripperArm {
         armExtenderLimit = hwMap.get(TouchSensor.class, "arm_limit");
     }
 
-    public void triggerControl(Gamepad gamepad) {
+    public void gripperControl(Gamepad gamepad) {
         double zeroThreshold = 0.1;
 
         if (gamepad.left_trigger > zeroThreshold) {
@@ -55,10 +55,7 @@ public class GripperArm {
         }
     }
 
-    protected void armControl(Gamepad gamepad) {
-        double threshold = 0.1;
-        double armExtenderMaxPower = 1.0;
-
+    public void armControl(Gamepad gamepad) {
         // Kicks off the bucket rotation but only when the button is first switches
         // from unpressed (false) to pressed (true).
         if (gamepad.a) {
@@ -76,15 +73,22 @@ public class GripperArm {
             pixel_Motor.setTargetPosition(gripperArmHangPosition);
             pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         }
+    }
+    public void armExtension(Gamepad gamepad){
+        double threshold = 0.1;
+        double armExtenderMaxPower = 1.0;
+
         if (gamepad.left_stick_y > threshold) {
             armExtender.setPower(armExtenderMaxPower);
         }
         else if (gamepad.left_stick_y < -threshold) {
             armExtender.setPower(-armExtenderMaxPower);
         }
-        else
+        else{
             armExtender.setPower(0.0);
+        }
     }
+
 //            if (armExtenderLimit.isPressed()) {
 //            telemetry.addLine("Sensor On");
 //        }
