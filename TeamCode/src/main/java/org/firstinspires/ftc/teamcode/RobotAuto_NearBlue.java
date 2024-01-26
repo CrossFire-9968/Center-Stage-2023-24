@@ -154,10 +154,11 @@ public class RobotAuto_NearBlue extends LinearOpMode
    public void dropLeftPixel(){
       double drivePower = 0.3;               // Motor power
       int countsToDriveOneInch = 33;         // Approximate encoder counts to drive 1 inch
-      int driveDistanceFromWall = -24;       // Inches
-      int strafeDistanceToTape = 13;         // Inches
-      int driveDistanceToDropPixel = 18;     // Inches
-      int countsToRotateToPark = -700;       // 450 is about 45 degrees
+      int driveDistanceFromWall = -20
+              ;       // Inches
+      int strafeDistanceToTape = 11;         // Inches
+      int driveDistanceToDropPixel = 15;     // Inches
+      int countsToRotateToPark = -780;       // 450 is about 45 degrees
       int driveDistanceToPark = 22;          // Inches
 
       // Drive forward from wall
