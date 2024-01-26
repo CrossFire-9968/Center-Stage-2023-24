@@ -15,8 +15,8 @@ public class GripperArm {
     int gripperArmPixelPosition = 500;
     int gripperArmHomePosition = 0;
     int gripperArmHangPosition = 700;
-    double openGripperValue = 0.9;
-    double closedGripperValue = 0.45;
+    double openGripperValue = 0.6;
+    double closedGripperValue = 0.25;
     public CRServo armExtender;
     public TouchSensor armExtenderLimit;
     double armSpeedUp = 0.4;
@@ -48,16 +48,24 @@ public class GripperArm {
         double zeroThreshold = 0.1;
 
         if (gamepad.left_trigger > zeroThreshold) {
-            gripper.setPosition(openGripperValue);
+            gripperOpen();
         }
         else if (gamepad.right_trigger > zeroThreshold) {
-            gripper.setPosition(closedGripperValue);
+            gripperClosed();
         }
     }
 
+    // Opens gripper claws to predetermined value
+    public void gripperOpen() {
+        gripper.setPosition(openGripperValue);
+    }
+
+    // Closes gripper claws to predetermined value
+    public void gripperClosed() {
+        gripper.setPosition(closedGripperValue);
+    }
+
     public void armControl(Gamepad gamepad) {
-        // Kicks off the bucket rotation but only when the button is first switches
-        // from unpressed (false) to pressed (true).
         if (gamepad.a) {
             pixel_Motor.setPower(armSpeedDown);
             pixel_Motor.setTargetPosition(gripperArmHomePosition);

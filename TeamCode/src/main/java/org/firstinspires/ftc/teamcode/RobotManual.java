@@ -56,7 +56,7 @@ public class RobotManual extends OpMode {
         // Instead of putting all the code in loop(), we break it up into methods
         // to make the code easier to maintain. As we advance in our coding, we'll
         // put these into different classes.
-        mecanum.drive(gamepad1);
+        mecanum.manualDrive(gamepad1);
         drone.control(gamepad2);
         gripperArm.gripperControl(gamepad2);
         gripperArm.armControl(gamepad2);

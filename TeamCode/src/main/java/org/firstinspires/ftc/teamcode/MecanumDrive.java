@@ -33,7 +33,7 @@ public class MecanumDrive {
         setAllMecanumPowers(0.0);
     }
 
-    public void drive(Gamepad gamepad) {
+    public void manualDrive(Gamepad gamepad) {
         double turnSpeed = gamepad.right_stick_x;
         double driveSpeed = gamepad.left_stick_y;
         double strafeSpeed = 0.0;
@@ -73,7 +73,6 @@ public class MecanumDrive {
         setEachMecanumPower(LFrontPower, RFrontPower, RRearPower, LRearPower);
     }
 
-
     // Set all mecanum powers
     protected void setAllMecanumPowers(double power) {
         motor_LF.setPower(power);
@@ -81,7 +80,6 @@ public class MecanumDrive {
         motor_RR.setPower(power);
         motor_LR.setPower(power);
     }
-
 
     protected void setEachMecanumPower(double LFpower, double RFpower, double RRpower, double LRpower) {
         motor_LF.setPower(driveSensitivity * LFpower);
