@@ -36,7 +36,7 @@ public class RobotAuto_NearBlue extends LinearOpMode
 
       // Until we have camera working, this is a way to cycle pixel location for test
       // Hit a-button to cycle to position
-      spikeLocation pixelLocation = spikeLocation.LEFT;
+      spikeLocation pixelLocation = spikeLocation.CENTER;
 
       // Wait for the game to start (driver presses PLAY)
       waitForStart();
@@ -71,12 +71,12 @@ public class RobotAuto_NearBlue extends LinearOpMode
     * <p> Sequence of events for dropping the pixel on the center tape and then parking </p>
     */
    public void dropCenterPixel() {
-      double drivePower = 0.3;                // Motor power
-      int countsToDriveOneInch = 33;      // Approximate encoder counts to drive 1 inch
-      int driveDistanceFromWall = 32;         // Inches
+      double drivePower = -0.3;                // Motor power
+      int countsToDriveOneInch = -33;      // Approximate encoder counts to drive 1 inch
+      int driveDistanceFromWall = 29;         // Inches
       int driveDistanceToDropPixel = -28;     // Inches
-      int rotateToPark = -875;
-      int strafeToPark = -45;
+      int rotateToPark = -750;
+      int strafeToPark = -50;
 
       // Drive forward from wall
       mecanumAuto.drive(drivePower, driveDistanceFromWall * countsToDriveOneInch);
@@ -108,11 +108,11 @@ public class RobotAuto_NearBlue extends LinearOpMode
    public void dropRightPixel() {
       double drivePower = 0.3;               // Motor power
       int countsToDriveOneInch = 33;      // Approximate encoder counts to drive 1 inch
-      int driveDistanceFromWall = 19;        // Inches
-      int countsToRotateToPixel = 450;       // 450 is about 45 degrees
-      int driveDistanceToTape = 9;           // Inches
-      int driveDistanceToDropPixel = -27;    // Inches
-      int countsToRotateToPark = -1200;      // 450 is about 45 degrees
+      int driveDistanceFromWall = -20;        // Inches
+      int countsToRotateToPixel = -450;       // 450 is about 45 degrees
+      int driveDistanceToTape = -6;           // Inches
+      int driveDistanceToDropPixel = 27;    // Inches
+      int countsToRotateToPark = -350;      // 450 is about 45 degrees
       int driveDistanceToPark = 22;          // Inches
 
       // Drive forward from wall
