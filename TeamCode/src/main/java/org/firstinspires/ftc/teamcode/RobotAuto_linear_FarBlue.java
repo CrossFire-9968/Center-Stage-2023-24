@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+
 @Autonomous(name="Robot Auto Far Blue")
 @Disabled
 public class RobotAuto_linear_FarBlue extends LinearOpMode
