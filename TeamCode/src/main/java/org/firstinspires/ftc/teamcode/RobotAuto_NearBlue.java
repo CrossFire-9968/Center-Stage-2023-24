@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -11,12 +12,14 @@ public class RobotAuto_NearBlue extends LinearOpMode
    public GripperArm gripperArm = new GripperArm();
    public Hang hang = new Hang();
    public Blinkin blinkin = new Blinkin();
-   public MecanumDriveAuto mecanumAuto =  new MecanumDriveAuto();
+   public MecanumDriveAuto mecanumAuto = new MecanumDriveAuto();
+   public PixelDetect pixelDetect = new PixelDetect();
    private ElapsedTime cameraTimer = new ElapsedTime();
 
-   enum spikeLocation {
-      LEFT, CENTER, RIGHT
+   enum pixelPosition {
+      UNKNOWN, LEFT, CENTER, RIGHT
    }
+
 
    @Override
    public void runOpMode() throws InterruptedException
@@ -30,27 +33,28 @@ public class RobotAuto_NearBlue extends LinearOpMode
       hang.init(hardwareMap);
       blinkin.init(hardwareMap);
       mecanumAuto.init(hardwareMap);
+      pixelDetect.initTfod(hardwareMap);
+      pixelPosition position;
       boolean isAutoComplete = false;
 
       // Init robot
       mecanumAuto.setAllMecanumPowers(0.0);
       gripperArm.gripperClosed();
-
-      // Until we have camera working, this is a way to cycle pixel location for test
-      // Hit a-button to cycle to position
-      spikeLocation pixelLocation = spikeLocation.CENTER;
+      blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.VIOLET);
 
       // Wait for the game to start (driver presses PLAY)
       waitForStart();
 
       // Run this code while Autonomous has not timed out
-      // Run this code while Autonomous has not timed out
-      while (opModeIsActive() && !isAutoComplete)
-      {
-         // drive to position to look for pixel
+      while (opModeIsActive() && !isAutoComplete) {
+         // drive to position to look for center pixel
          driveToViewPoint();
 
-         switch (pixelLocation)
+         // Determine location of pixel
+         position = findPixel();
+         telemetry.update();
+
+         switch (position)
          {
             // Center pixel location detected
             case CENTER:
@@ -66,12 +70,19 @@ public class RobotAuto_NearBlue extends LinearOpMode
             case LEFT:
                dropLeftPixel();
                break;
-         }
+
+            case UNKNOWN:
+            default:
+               // what to do if we don't find pixel
+               break;
+            }
 
          isAutoComplete = true;
       }
    }
 
+
+   // Robot drives to position where it attempt to find the pixel before moving to drop on tape
    public void driveToViewPoint() {
       double drivePower = -0.3;
       int driveDistanceFromWall = 24;
@@ -82,24 +93,59 @@ public class RobotAuto_NearBlue extends LinearOpMode
       sleep(500);
    }
 
-   public boolean isPixelFound(){
-      boolean pixelFound = false;
 
+   // Method attempts to position robot and use tensorflow to determine location of pixel
+   public pixelPosition findPixel() {
+      double maxTimeToWait = 5000;                       // milliseconds
+      double minConfidence = 0.75;
+      pixelPosition position = pixelPosition.UNKNOWN;
+
+      // Check if pixel is in center location
+      // Allow tensorflow time to settle as we have noticed delays in the process
       cameraTimer.reset();
-
-      while ((cameraTimer.seconds() < 5) && (!pixelFound)){
-         if
+      while ((cameraTimer.milliseconds() < maxTimeToWait) && (position == pixelPosition.UNKNOWN)) {
+         if (pixelDetect.getTfodConfidence(telemetry) > minConfidence) {
+            position = pixelPosition.CENTER;
+            blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.HEARTBEAT_BLUE);
+            telemetry.addLine("Pixel is in CENTER position");
+         }
       }
+
+      // If pixel is not in center position, rotate robot check if pixel is in right location
+      mecanumAuto.rotate(0.3, -450);
+      waitForMotionToComplete();
+      cameraTimer.reset();
+      while ((cameraTimer.milliseconds() < maxTimeToWait) && (position == pixelPosition.UNKNOWN)) {
+         if (pixelDetect.getTfodConfidence(telemetry) > minConfidence) {
+            position = pixelPosition.RIGHT;
+            blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.HEARTBEAT_RED);
+            telemetry.addLine("Pixel is in RIGHT position");
+         }
+      }
+
+      // If pixel is not in right position, assume it is in the left
+      if (position == pixelPosition.UNKNOWN)
+      {
+         mecanumAuto.rotate(0.3, 450);
+         waitForMotionToComplete();
+         position = pixelPosition.LEFT;
+         blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.HEARTBEAT_WHITE);
+         telemetry.addLine("Pixel is in LEFT position");
+      }
+
+      // Stop streaming to release CPU resources
+      pixelDetect.stop();
+
+      return position;
    }
 
-   /**
-    * <p> Sequence of events for dropping the pixel on the center tape and then parking </p>
-    */
+
+   // Sequence of events for dropping the pixel on the center tape and then parking
    public void dropCenterPixel() {
-      double drivePower = -0.3;                // Motor power
-       int countsToDriveOneInch = -33;      // Approximate encoder counts to drive 1 inch
+      double drivePower = -0.3;              // Motor power
+      int countsToDriveOneInch = -33;        // Approximate encoder counts to drive 1 inch
       int driveDistanceFromWall = 29;        // Inches
-      int driveDistanceToDropPixel = -28;     // Inches
+      int driveDistanceToDropPixel = -28;    // Inches
       int rotateToPark = -750;
       int strafeToPark = -50;
 
@@ -127,17 +173,17 @@ public class RobotAuto_NearBlue extends LinearOpMode
       sleep(500);
    }
 
-   /**
-    * <p> Sequence of events for dropping the pixel on the righthand tape and then parking </p>
-    */
+
+
+   // Sequence of events for dropping the pixel on the righthand tape and then parking
    public void dropRightPixel() {
       double drivePower = 0.3;               // Motor power
-      int countsToDriveOneInch = 33;      // Approximate encoder counts to drive 1 inch
-      int driveDistanceFromWall = -20;        // Inches
-      int countsToRotateToPixel = -450;       // 450 is about 45 degrees
-      int driveDistanceToTape = -6;           // Inches
-      int driveDistanceToDropPixel = 27;    // Inches
-      int countsToRotateToPark = -350;      // 450 is about 45 degrees
+      int countsToDriveOneInch = 33;         // Approximate encoder counts to drive 1 inch
+      int driveDistanceFromWall = -20;       // Inches
+      int countsToRotateToPixel = -450;      // 450 is about 45 degrees
+      int driveDistanceToTape = -6;          // Inches
+      int driveDistanceToDropPixel = 27;     // Inches
+      int countsToRotateToPark = -350;       // 450 is about 45 degrees
       int driveDistanceToPark = 22;          // Inches
 
       // Drive forward from wall
@@ -173,14 +219,12 @@ public class RobotAuto_NearBlue extends LinearOpMode
       waitForMotionToComplete();
    }
 
-   /**
-    * <p> Sequence of events for dropping the pixel on the lefthand tape and then parking </p>
-    */
-   public void dropLeftPixel(){
+
+   // Sequence of events for dropping the pixel on the lefthand tape and then parking
+   public void dropLeftPixel() {
       double drivePower = 0.3;               // Motor power
       int countsToDriveOneInch = 33;         // Approximate encoder counts to drive 1 inch
-      int driveDistanceFromWall = -20
-              ;       // Inches
+      int driveDistanceFromWall = -20;       // Inches
       int strafeDistanceToTape = 11;         // Inches
       int driveDistanceToDropPixel = 15;     // Inches
       int countsToRotateToPark = -780;       // 450 is about 45 degrees
@@ -214,6 +258,7 @@ public class RobotAuto_NearBlue extends LinearOpMode
       mecanumAuto.drive(drivePower, driveDistanceToPark * countsToDriveOneInch);
       waitForMotionToComplete();
    }
+
 
    // Drive until one of the 4 wheels has reached it's target position. We only wait for one
    // because it is not guaranteed all 4 wheels will reach their target at the same time due
