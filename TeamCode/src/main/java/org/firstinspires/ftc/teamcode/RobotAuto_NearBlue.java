@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Autonomous(name="Robot Auto Near Blue")
 public class RobotAuto_NearBlue extends LinearOpMode
@@ -11,6 +12,7 @@ public class RobotAuto_NearBlue extends LinearOpMode
    public Hang hang = new Hang();
    public Blinkin blinkin = new Blinkin();
    public MecanumDriveAuto mecanumAuto =  new MecanumDriveAuto();
+   private ElapsedTime cameraTimer = new ElapsedTime();
 
    enum spikeLocation {
       LEFT, CENTER, RIGHT
@@ -45,6 +47,9 @@ public class RobotAuto_NearBlue extends LinearOpMode
       // Run this code while Autonomous has not timed out
       while (opModeIsActive() && !isAutoComplete)
       {
+         // drive to position to look for pixel
+         driveToViewPoint();
+
          switch (pixelLocation)
          {
             // Center pixel location detected
@@ -67,13 +72,33 @@ public class RobotAuto_NearBlue extends LinearOpMode
       }
    }
 
+   public void driveToViewPoint() {
+      double drivePower = -0.3;
+      int driveDistanceFromWall = 24;
+      int countsToDriveOneInch = -33;
+
+      mecanumAuto.drive(drivePower, driveDistanceFromWall * countsToDriveOneInch);
+      waitForMotionToComplete();
+      sleep(500);
+   }
+
+   public boolean isPixelFound(){
+      boolean pixelFound = false;
+
+      cameraTimer.reset();
+
+      while ((cameraTimer.seconds() < 5) && (!pixelFound)){
+         if
+      }
+   }
+
    /**
     * <p> Sequence of events for dropping the pixel on the center tape and then parking </p>
     */
    public void dropCenterPixel() {
       double drivePower = -0.3;                // Motor power
-      int countsToDriveOneInch = -33;      // Approximate encoder counts to drive 1 inch
-      int driveDistanceFromWall = 29;         // Inches
+       int countsToDriveOneInch = -33;      // Approximate encoder counts to drive 1 inch
+      int driveDistanceFromWall = 29;        // Inches
       int driveDistanceToDropPixel = -28;     // Inches
       int rotateToPark = -750;
       int strafeToPark = -50;
