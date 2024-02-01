@@ -52,23 +52,22 @@ public class RobotAuto_NearBlue extends LinearOpMode
 
          // Determine location of pixel
          position = findPixel();
-         telemetry.update();
 
          switch (position)
          {
             // Center pixel location detected
             case CENTER:
-               dropCenterPixel();
+               //dropCenterPixel();
                break;
 
             // Right pixel location detected
             case RIGHT:
-               dropRightPixel();
+               //dropRightPixel();
                break;
 
             // Left pixel location detected
             case LEFT:
-               dropLeftPixel();
+               //dropLeftPixel();
                break;
 
             case UNKNOWN:
@@ -79,13 +78,15 @@ public class RobotAuto_NearBlue extends LinearOpMode
 
          isAutoComplete = true;
       }
+
+      sleep(10000);
    }
 
 
    // Robot drives to position where it attempt to find the pixel before moving to drop on tape
    public void driveToViewPoint() {
-      double drivePower = -0.3;
-      int driveDistanceFromWall = 24;
+      double drivePower = -0.20;
+      int driveDistanceFromWall = 19;
       int countsToDriveOneInch = -33;
 
       mecanumAuto.drive(drivePower, driveDistanceFromWall * countsToDriveOneInch);
@@ -96,8 +97,10 @@ public class RobotAuto_NearBlue extends LinearOpMode
 
    // Method attempts to position robot and use tensorflow to determine location of pixel
    public pixelPosition findPixel() {
-      double maxTimeToWait = 5000;                       // milliseconds
+      double maxTimeToWait = 3000;                       // milliseconds
       double minConfidence = 0.75;
+      double drivePower = -0.20;                         // Motor power
+      int countsToRotateToPixel = 450;                   // 450 is about 45 degrees
       pixelPosition position = pixelPosition.UNKNOWN;
 
       // Check if pixel is in center location
@@ -107,34 +110,30 @@ public class RobotAuto_NearBlue extends LinearOpMode
          if (pixelDetect.getTfodConfidence(telemetry) > minConfidence) {
             position = pixelPosition.CENTER;
             blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.HEARTBEAT_BLUE);
-            telemetry.addLine("Pixel is in CENTER position");
          }
       }
 
       // If pixel is not in center position, rotate robot check if pixel is in right location
-      mecanumAuto.rotate(0.3, -450);
-      waitForMotionToComplete();
-      cameraTimer.reset();
-      while ((cameraTimer.milliseconds() < maxTimeToWait) && (position == pixelPosition.UNKNOWN)) {
-         if (pixelDetect.getTfodConfidence(telemetry) > minConfidence) {
-            position = pixelPosition.RIGHT;
-            blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.HEARTBEAT_RED);
-            telemetry.addLine("Pixel is in RIGHT position");
+      if (position == pixelPosition.UNKNOWN) {
+         mecanumAuto.rotate(drivePower, -countsToRotateToPixel);
+         waitForMotionToComplete();
+         cameraTimer.reset();
+         while ((cameraTimer.milliseconds() < maxTimeToWait) && (position == pixelPosition.UNKNOWN)) {
+            if (pixelDetect.getTfodConfidence(telemetry) > minConfidence) {
+               position = pixelPosition.RIGHT;
+               blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.HEARTBEAT_RED);
+            }
          }
       }
 
       // If pixel is not in right position, assume it is in the left
       if (position == pixelPosition.UNKNOWN)
       {
-         mecanumAuto.rotate(0.3, 450);
+         mecanumAuto.rotate(drivePower, countsToRotateToPixel);
          waitForMotionToComplete();
          position = pixelPosition.LEFT;
          blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.HEARTBEAT_WHITE);
-         telemetry.addLine("Pixel is in LEFT position");
       }
-
-      // Stop streaming to release CPU resources
-      pixelDetect.stop();
 
       return position;
    }
