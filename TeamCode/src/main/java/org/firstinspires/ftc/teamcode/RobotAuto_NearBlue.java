@@ -104,7 +104,7 @@ public class RobotAuto_NearBlue extends LinearOpMode
       pixelPosition position = pixelPosition.UNKNOWN;
 
       // Check if pixel is in center location
-      // Allow tensorflow time to settle as we have noticed delays in the process
+      // The timer is to allow tensorflow to settle as we have noticed delays in the process
       cameraTimer.reset();
       while ((cameraTimer.milliseconds() < maxTimeToWait) && (position == pixelPosition.UNKNOWN)) {
          if (pixelDetect.getTfodConfidence(telemetry) > minConfidence) {
@@ -113,7 +113,8 @@ public class RobotAuto_NearBlue extends LinearOpMode
          }
       }
 
-      // If pixel is not in center position, rotate robot check if pixel is in right location
+      // If pixel is not in center position, rotate robot check if pixel is in right location.
+      // The timer is to allow tensorflow to settle as we have noticed delays in the process
       if (position == pixelPosition.UNKNOWN) {
          mecanumAuto.rotate(drivePower, -countsToRotateToPixel);
          waitForMotionToComplete();
@@ -127,6 +128,7 @@ public class RobotAuto_NearBlue extends LinearOpMode
       }
 
       // If pixel is not in right position, assume it is in the left
+      // TODO: It rotates the robot back to the look center which should probably be moved to the dropLeftPixel method
       if (position == pixelPosition.UNKNOWN)
       {
          mecanumAuto.rotate(drivePower, countsToRotateToPixel);
