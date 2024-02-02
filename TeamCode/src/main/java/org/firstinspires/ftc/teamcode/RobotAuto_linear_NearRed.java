@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@Autonomous(name="Robot Auto Near Red")
+@Autonomous(name="Robot Auto Linear Near Red")
 @Disabled
 public class RobotAuto_linear_NearRed extends LinearOpMode
 {
