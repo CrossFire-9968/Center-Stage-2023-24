@@ -57,17 +57,17 @@ public class RobotAuto_NearBlue extends LinearOpMode
          {
             // Center pixel location detected
             case CENTER:
-               //dropCenterPixel();
+               dropCenterPixel();
                break;
 
             // Right pixel location detected
             case RIGHT:
-               //dropRightPixel();
+               dropRightPixel();
                break;
 
             // Left pixel location detected
             case LEFT:
-               //dropLeftPixel();
+               dropLeftPixel();
                break;
 
             case UNKNOWN:
@@ -78,8 +78,6 @@ public class RobotAuto_NearBlue extends LinearOpMode
 
          isAutoComplete = true;
       }
-
-      sleep(10000);
    }
 
 
@@ -145,8 +143,8 @@ public class RobotAuto_NearBlue extends LinearOpMode
    public void dropCenterPixel() {
       double drivePower = -0.3;              // Motor power
       int countsToDriveOneInch = -33;        // Approximate encoder counts to drive 1 inch
-      int driveDistanceFromWall = 29;        // Inches
-      int driveDistanceToDropPixel = -28;    // Inches
+      int driveDistanceFromWall = 10;        // Inches
+      int driveBackwardsToWall = -26;    // Inches
       int rotateToPark = -750;
       int strafeToPark = -50;
 
@@ -160,7 +158,7 @@ public class RobotAuto_NearBlue extends LinearOpMode
       sleep(500);
 
       // Drive backwards to lay down pixel
-      mecanumAuto.drive(drivePower, driveDistanceToDropPixel * countsToDriveOneInch);
+      mecanumAuto.drive(drivePower, driveBackwardsToWall * countsToDriveOneInch);
       waitForMotionToComplete();
 
       // strafe to avoid bars
@@ -180,22 +178,10 @@ public class RobotAuto_NearBlue extends LinearOpMode
    public void dropRightPixel() {
       double drivePower = 0.3;               // Motor power
       int countsToDriveOneInch = 33;         // Approximate encoder counts to drive 1 inch
-      int driveDistanceFromWall = -20;       // Inches
-      int countsToRotateToPixel = -450;      // 450 is about 45 degrees
       int driveDistanceToTape = -6;          // Inches
       int driveDistanceToDropPixel = 27;     // Inches
       int countsToRotateToPark = -350;       // 450 is about 45 degrees
       int driveDistanceToPark = 22;          // Inches
-
-      // Drive forward from wall
-      mecanumAuto.drive(drivePower, driveDistanceFromWall * countsToDriveOneInch);
-      waitForMotionToComplete();
-      sleep(500);
-
-      // Rotate towards tape
-      mecanumAuto.rotate(drivePower, countsToRotateToPixel);
-      waitForMotionToComplete();
-      sleep(500);
 
       // Drive forward to tape
       mecanumAuto.drive(drivePower, driveDistanceToTape * countsToDriveOneInch);
@@ -225,16 +211,10 @@ public class RobotAuto_NearBlue extends LinearOpMode
    public void dropLeftPixel() {
       double drivePower = 0.3;               // Motor power
       int countsToDriveOneInch = 33;         // Approximate encoder counts to drive 1 inch
-      int driveDistanceFromWall = -20;       // Inches
-      int strafeDistanceToTape = 11;         // Inches
-      int driveDistanceToDropPixel = 15;     // Inches
+      int strafeDistanceToTape = 12;         // Inches
+      int driveDistanceToDropPixel = 13;     // Inches
       int countsToRotateToPark = -780;       // 450 is about 45 degrees
       int driveDistanceToPark = 22;          // Inches
-
-      // Drive forward from wall
-      mecanumAuto.drive(drivePower, driveDistanceFromWall * countsToDriveOneInch);
-      waitForMotionToComplete();
-      sleep(500);
 
       //Strafe
       mecanumAuto.strafe(drivePower, strafeDistanceToTape * countsToDriveOneInch);
