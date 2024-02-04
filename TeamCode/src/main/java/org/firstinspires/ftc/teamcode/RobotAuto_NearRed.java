@@ -111,7 +111,7 @@ public class RobotAuto_NearRed extends LinearOpMode
          }
       }
 
-      // If pixel is not in center position, rotate robot check if pixel is in right location.
+      // If pixel is not in center position, rotate robot check if pixel is in left location.
       // The timer is to allow tensorflow to settle as we have noticed delays in the process
       if (position == pixelPosition.UNKNOWN) {
          mecanumAuto.rotate(drivePower, countsToRotateToPixel);

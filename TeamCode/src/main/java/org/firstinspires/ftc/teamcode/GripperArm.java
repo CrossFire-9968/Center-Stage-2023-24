@@ -8,14 +8,16 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 public class GripperArm {
     public Servo gripper;
     public TouchSensor gripperTouchUpper;
     public TouchSensor gripperTouchLower;
-    int gripperArmPixelPosition = 500;
+    int gripperArmPixelPosition = 650;
     int gripperArmHomePosition = 0;
-    int gripperArmHangPosition = 700;
-    double openGripperValue = 0.6;
+    int gripperArmHangPosition = 800;
+    double openGripperValue = 0.5;
     double closedGripperValue = 0.25;
     public CRServo armExtender;
     public TouchSensor armExtenderLimit;
@@ -65,7 +67,7 @@ public class GripperArm {
         gripper.setPosition(closedGripperValue);
     }
 
-    public void armControl(Gamepad gamepad) {
+    public int armControl(Gamepad gamepad) {
         if (gamepad.a) {
             pixel_Motor.setPower(armSpeedDown);
             pixel_Motor.setTargetPosition(gripperArmHomePosition);
@@ -81,7 +83,9 @@ public class GripperArm {
             pixel_Motor.setTargetPosition(gripperArmHangPosition);
             pixel_Motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         }
+        return pixel_Motor.getCurrentPosition();
     }
+
     public void armExtension(Gamepad gamepad){
         double threshold = 0.1;
         double armExtenderMaxPower = 1.0;

@@ -59,8 +59,10 @@ public class RobotManual extends OpMode {
         mecanum.manualDrive(gamepad1);
         drone.control(gamepad2);
         gripperArm.gripperControl(gamepad2);
-        gripperArm.armControl(gamepad2);
+        int armPosition = gripperArm.armControl(gamepad2);
         gripperArm.armExtension(gamepad2);
         hang.hangerControl(gamepad2);
+
+        telemetry.addData("armPosition: ", armPosition);
     }
 }
