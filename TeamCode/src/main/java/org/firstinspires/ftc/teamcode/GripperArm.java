@@ -14,9 +14,9 @@ public class GripperArm {
     public Servo gripper;
     public TouchSensor gripperTouchUpper;
     public TouchSensor gripperTouchLower;
-    int gripperArmPixelPosition = 600;
+    int gripperArmPixelPosition = 500;
     int gripperArmHomePosition = 0;
-    int gripperArmHangPosition = 800;
+    int gripperArmHangPosition = 700;
     double openGripperValue = 0.5;
     double closedGripperValue = 0.25;
     public CRServo armExtender;
