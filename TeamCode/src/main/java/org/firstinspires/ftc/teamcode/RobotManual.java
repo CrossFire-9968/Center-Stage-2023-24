@@ -43,10 +43,10 @@ public class RobotManual extends OpMode {
             blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.GREEN);
         }
         else if (timer.seconds() >= 90 && timer.seconds() < 120) {
-            blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.HEARTBEAT_WHITE);
+            blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.WHITE);
         }
         else if (timer.seconds() >= 120) {
-            blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.HEARTBEAT_RED);
+            blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.RED);
         }
         else {
             blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.BLUE);

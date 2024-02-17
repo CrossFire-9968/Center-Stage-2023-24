@@ -107,7 +107,7 @@ public class RobotAuto_FarBlue extends LinearOpMode
             while ((cameraTimer.milliseconds() < maxTimeToWait) && (position == org.firstinspires.ftc.teamcode.RobotAuto_NearRed.pixelPosition.UNKNOWN)) {
                 if (pixelDetect.getTfodConfidence(telemetry) > minConfidence) {
                     position = org.firstinspires.ftc.teamcode.RobotAuto_NearRed.pixelPosition.CENTER;
-                    blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.HEARTBEAT_BLUE);
+                    blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.BLUE);
                 }
             }
 
@@ -120,7 +120,7 @@ public class RobotAuto_FarBlue extends LinearOpMode
                 while ((cameraTimer.milliseconds() < maxTimeToWait) && (position == org.firstinspires.ftc.teamcode.RobotAuto_NearRed.pixelPosition.UNKNOWN)) {
                     if (pixelDetect.getTfodConfidence(telemetry) > minConfidence) {
                         position = org.firstinspires.ftc.teamcode.RobotAuto_NearRed.pixelPosition.LEFT;
-                        blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.HEARTBEAT_RED);
+                        blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.RED);
                     }
                 }
             }
@@ -132,7 +132,7 @@ public class RobotAuto_FarBlue extends LinearOpMode
                 mecanumAuto.rotate(drivePower, -countsToRotateToPixel);
                 waitForMotionToComplete();
                 position = org.firstinspires.ftc.teamcode.RobotAuto_NearRed.pixelPosition.RIGHT;
-                blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.HEARTBEAT_WHITE);
+                blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.WHITE);
             }
 
             return position;
