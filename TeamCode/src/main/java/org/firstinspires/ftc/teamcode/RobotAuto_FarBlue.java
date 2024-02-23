@@ -15,6 +15,7 @@ public class RobotAuto_FarBlue extends LinearOpMode
         public MecanumDriveAuto mecanumAuto = new MecanumDriveAuto();
         public PixelDetect pixelDetect = new PixelDetect();
         private ElapsedTime cameraTimer = new ElapsedTime();
+        private long autoStateDelay = 300;
 
         enum pixelPosition {
             UNKNOWN, LEFT, CENTER, RIGHT
@@ -89,7 +90,7 @@ public class RobotAuto_FarBlue extends LinearOpMode
 
             mecanumAuto.drive(drivePower, driveDistanceFromWall * countsToDriveOneInch);
             waitForMotionToComplete();
-            sleep(500);
+            sleep(autoStateDelay);
         }
 
 
@@ -154,31 +155,31 @@ public class RobotAuto_FarBlue extends LinearOpMode
             // Drive forward from wall.
             mecanumAuto.drive(drivePower, driveDistanceToPixel * countsToDriveOneInch);
             waitForMotionToComplete();
-            sleep(500);
+            sleep(autoStateDelay);
 
             // Drop pixel
             gripperArm.gripperOpen();
-            sleep(500);
+            sleep(autoStateDelay);
 
             // Drive backwards to strafe
             mecanumAuto.drive(drivePower, backwardsToStrafe * countsToDriveOneInch);
             waitForMotionToComplete();
-            sleep(500);
+            sleep(autoStateDelay);
 
             // Strafe to go around pixel
             mecanumAuto.strafe(drivePower, strafeToAvoidPixel * countsToDriveOneInch);
             waitForMotionToComplete();
-            sleep(500);
+            sleep(autoStateDelay);
 
             // Drive forward from pixel
             mecanumAuto.drive(drivePower, driveForwardsFromPixel * countsToDriveOneInch);
             waitForMotionToComplete();
-            sleep(500);
+            sleep(autoStateDelay);
 
             // strafe to avoid bars
             mecanumAuto.strafe(drivePower, strafeToPark * countsToDriveOneInch);
             waitForMotionToComplete();
-            sleep(500);
+            sleep(autoStateDelay);
 
 //            // Back into backstage
 //            mecanumAuto.drive(drivePower, driveBackstage * countsToDriveOneInch);
@@ -187,7 +188,7 @@ public class RobotAuto_FarBlue extends LinearOpMode
             // Rotate towards park position
             mecanumAuto.rotate(drivePower,rotateToPark);
             waitForMotionToComplete();
-            sleep(500);
+            sleep(autoStateDelay);
         }
 
 
@@ -206,11 +207,11 @@ public class RobotAuto_FarBlue extends LinearOpMode
             // Drive forward to tape
             mecanumAuto.drive(drivePower, driveDistanceToTape * countsToDriveOneInch);
             waitForMotionToComplete();
-            sleep(500);
+            sleep(autoStateDelay);
 
             // Drop pixel
             gripperArm.gripperOpen();
-            sleep(500);
+            sleep(autoStateDelay);
 
             // Drive backwards to lay down pixel
             mecanumAuto.drive(drivePower, driveDistanceToDropPixel * countsToDriveOneInch);
@@ -219,7 +220,7 @@ public class RobotAuto_FarBlue extends LinearOpMode
             // Rotate toward pixel
             mecanumAuto.rotate(drivePower, countsToRotateToPark);
             waitForMotionToComplete();
-            sleep(500);
+            sleep(autoStateDelay);
 
             // Drive from pixel
             mecanumAuto.drive(drivePower, driveDistanceToPark * countsToDriveOneInch);
@@ -228,12 +229,12 @@ public class RobotAuto_FarBlue extends LinearOpMode
             //strafe to park
             mecanumAuto.strafe(drivePower, strafeToPark * countsToDriveOneInch);
             waitForMotionToComplete();
-            sleep(500);
+            sleep(autoStateDelay);
 
             // Rotate towards park position
             mecanumAuto.rotate(drivePower,rotateToPark);
             waitForMotionToComplete();
-            sleep(500);
+            sleep(autoStateDelay);
         }
 
 
@@ -250,31 +251,31 @@ public class RobotAuto_FarBlue extends LinearOpMode
             //Strafe
             mecanumAuto.strafe(drivePower, strafeDistanceToTape * countsToDriveOneInch);
             waitForMotionToComplete();
-            sleep(500);
+            sleep(autoStateDelay);
 
             // Drop pixel
             gripperArm.gripperOpen();
-            sleep(500);
+            sleep(autoStateDelay);
 
             // corrective rotation
             mecanumAuto.rotate(drivePower,rotateCorrect);
             waitForMotionToComplete();
-            sleep(500);
+            sleep(autoStateDelay);
 
             // Drive backwards to lay down pixel
             mecanumAuto.drive(drivePower, driveDistanceToStrafe * countsToDriveOneInch);
             waitForMotionToComplete();
-            sleep(500);
+            sleep(autoStateDelay);
 
             //strafe to park
             mecanumAuto.strafe(drivePower, strafeToPark * countsToDriveOneInch);
             waitForMotionToComplete();
-            sleep(500);
+            sleep(autoStateDelay);
 
             // Rotate towards park position
             mecanumAuto.rotate(drivePower,rotateToPark);
             waitForMotionToComplete();
-            sleep(500);
+            sleep(autoStateDelay);
         }
 
 

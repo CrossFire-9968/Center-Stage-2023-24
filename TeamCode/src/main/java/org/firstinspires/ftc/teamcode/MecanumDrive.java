@@ -51,19 +51,18 @@ public class MecanumDrive {
         RRearPower = driveSpeed + turnSpeed - strafeSpeed;
         LRearPower = driveSpeed - turnSpeed + strafeSpeed;
 
-        //        // Cubing power values to give finer control at slow speeds
-//      LFrontPower = Math.pow(LFrontPower, 1);
-//      RFrontPower = Math.pow(RFrontPower, 1);
-//      RRearPower = Math.pow(RRearPower, 1);
-//      LRearPower = Math.pow(LRearPower, 1);
-
+        // Find which motor power command is the greatest. If not motor
+        // is greater than 1.0 (the max motor power possible) just set it by default
+        // to 1.0 so the ratiometric calculation we do next does not
+        // inadvertently increase motor powers.
         double max = 1.0;
         max = Math.max(max, Math.abs(LFrontPower));
         max = Math.max(max, Math.abs(RFrontPower));
         max = Math.max(max, Math.abs(RRearPower));
         max = Math.max(max, Math.abs(LRearPower));
 
-        // Ratio drive powers
+        // Ratiometric calculation that proportionally reduces all powers in cases where on
+        // motor input is greater than 1.0. This keeps the driving feel consistent to the driver.
         LFrontPower = (LFrontPower / max);
         RFrontPower = (RFrontPower / max);
         RRearPower = (RRearPower / max);
