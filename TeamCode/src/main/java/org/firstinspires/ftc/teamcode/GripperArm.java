@@ -90,7 +90,7 @@ public class GripperArm {
         double threshold = 0.1;
         double armExtenderMaxPower = 1.0;
 
-        if (gamepad.left_stick_y > threshold) {
+        if ((gamepad.left_stick_y > threshold) && (!armExtenderLimit.isPressed())) {
             armExtender.setPower(armExtenderMaxPower);
         }
         else if (gamepad.left_stick_y < -threshold) {
