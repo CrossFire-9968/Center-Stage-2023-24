@@ -143,10 +143,12 @@ public class RobotAuto_FarRed extends LinearOpMode
         public void dropCenterPixel() {
             double drivePower = -0.2;              // Motor power
             int countsToDriveOneInch = -33;        // Approximate encoder counts to drive 1 inch
-            int driveDistanceToPixel = 8;        // Inches
-            int driveForwardsFromPixel = 25;    // Inches
+            int driveDistanceToPixel = 11;        // Inches
+            int driveForwardsFromPixel = 30;    // Inches
             int rotateToPark = 750;
-            int strafeToPark = 110;
+            int strafeToPark = 122;
+            int backwardsToStrafe = -4;
+            int strafeToAvoidPixel = -15;
 
             // Drive forward from wall
             mecanumAuto.drive(drivePower, driveDistanceToPixel * countsToDriveOneInch);
@@ -157,7 +159,17 @@ public class RobotAuto_FarRed extends LinearOpMode
             gripperArm.gripperOpen();
             sleep(500);
 
-            // Drive backwards to lay down pixel
+            // Drive backwards to strafe
+            mecanumAuto.drive(drivePower, backwardsToStrafe * countsToDriveOneInch);
+            waitForMotionToComplete();
+            sleep(500);
+
+            // Strafe to go around pixel
+            mecanumAuto.strafe(drivePower, strafeToAvoidPixel * countsToDriveOneInch);
+            waitForMotionToComplete();
+            sleep(500);
+
+            // Drive forwards from pixel
             mecanumAuto.drive(drivePower, driveForwardsFromPixel * countsToDriveOneInch);
             waitForMotionToComplete();
 

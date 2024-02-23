@@ -82,7 +82,7 @@ public class MecanumDrive {
     }
 
     protected void setEachMecanumPower(double LFpower, double RFpower, double RRpower, double LRpower) {
-        motor_LF.setPower(driveSensitivity * LFpower);
+        motor_LF.setPower(driveSensitivity * LFpower * 1.03);
         motor_RF.setPower(driveSensitivity * RFpower);
         motor_RR.setPower(driveSensitivity * RRpower);
         motor_LR.setPower(driveSensitivity * LRpower);

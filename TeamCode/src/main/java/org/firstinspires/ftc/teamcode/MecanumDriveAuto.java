@@ -7,7 +7,7 @@ public class MecanumDriveAuto extends MecanumDrive {
    // 32 counts per inch est.
    public void drive(double power, int distance) {
       stopAndResetEncoders();
-      setAllMecanumPowers(power);
+      setEachMecanumPower(power, power, power, power);
       setTargetPosition(distance);
       runToPosition();
    }
