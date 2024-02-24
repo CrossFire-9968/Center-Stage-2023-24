@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 public class MecanumDrive {
     public DcMotor motor_LR;
     public DcMotor motor_RR;
@@ -16,6 +18,8 @@ public class MecanumDrive {
     double RRearPower;
     double LRearPower;
     double strafeMax = 1.0;
+    boolean strafeByJoystick = false;
+    boolean backButtonHeld = false;
 
     public void init(HardwareMap hwMap){
         motor_LF = hwMap.get(DcMotor.class, "Motor_LF");
@@ -33,17 +37,42 @@ public class MecanumDrive {
         setAllMecanumPowers(0.0);
     }
 
-    public void manualDrive(Gamepad gamepad) {
+    public void manualDrive(Gamepad gamepad, Telemetry telemetry) {
         double turnSpeed = gamepad.right_stick_x;
         double driveSpeed = gamepad.left_stick_y;
         double strafeSpeed = 0.0;
 
-        if (gamepad.left_bumper) {
-            strafeSpeed = -strafeMax;
+        if (gamepad.back && !backButtonHeld)
+        {
+            strafeByJoystick = !strafeByJoystick;
+            backButtonHeld = true;
         }
-        else if (gamepad.right_bumper) {
-            strafeSpeed = strafeMax;
+
+        if (!gamepad.back) {
+            backButtonHeld = false;
         }
+
+        if (strafeByJoystick) {
+            strafeSpeed = gamepad.left_stick_x;
+            telemetry.addLine("Strafe by Joystick");
+        }
+        else {
+            if (gamepad.left_bumper) {
+                strafeSpeed = -strafeMax;
+            }
+            else if (gamepad.right_bumper) {
+                strafeSpeed = strafeMax;
+            }
+            telemetry.addLine("Strafe by Buttons");
+        }
+
+//
+//        if (gamepad.left_bumper) {
+//            strafeSpeed = -strafeMax;
+//        }
+//        else if (gamepad.right_bumper) {
+//            strafeSpeed = strafeMax;
+//        }
 
         // Raw drive power for each motor from joystick inputs
         LFrontPower = driveSpeed - turnSpeed - strafeSpeed;
