@@ -150,7 +150,7 @@ public class RobotAuto_FarRed extends LinearOpMode
             int rotateToPark = 765;
             int strafeToPark = -5;
             int backupToPark = -20;
-            int rotateCorrect = 40;
+            int rotateCorrect = 50;
 
             // Drive to tape
             mecanumAuto.drive(-autoDrivePower, driveDistanceToPixel * countsToDriveOneInch);
