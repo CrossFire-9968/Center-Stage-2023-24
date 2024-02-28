@@ -16,6 +16,7 @@ public class RobotAuto_FarRed extends LinearOpMode
         public PixelDetect pixelDetect = new PixelDetect();
         private ElapsedTime cameraTimer = new ElapsedTime();
         private long autoStateDelay = 300;
+        private double autoDrivePower = 0.2;
 
         enum pixelPosition {
             UNKNOWN, LEFT, CENTER, RIGHT
@@ -84,11 +85,10 @@ public class RobotAuto_FarRed extends LinearOpMode
 
         // Robot drives to position where it attempt to find the pixel before moving to drop on tape
         public void driveToViewPoint() {
-            double drivePower = -0.20;
             int driveDistanceFromWall = 19;
             int countsToDriveOneInch = -33;
 
-            mecanumAuto.drive(drivePower, driveDistanceFromWall * countsToDriveOneInch);
+            mecanumAuto.drive(-autoDrivePower, driveDistanceFromWall * countsToDriveOneInch);
             waitForMotionToComplete();
             sleep(autoStateDelay);
         }
@@ -96,9 +96,8 @@ public class RobotAuto_FarRed extends LinearOpMode
 
         // Method attempts to position robot and use tensorflow to determine location of pixel
         public RobotAuto_NearRed.pixelPosition findPixel() {
-            double maxTimeToWait = 3000;                       // milliseconds
+            double maxTimeToWait = 2000;                       // milliseconds
             double minConfidence = 0.75;
-            double drivePower = -0.20;                         // Motor power
             int countsToRotateToPixel = 450;                   // 450 is about 45 degrees
             RobotAuto_NearRed.pixelPosition position = RobotAuto_NearRed.pixelPosition.UNKNOWN;
 
@@ -115,7 +114,7 @@ public class RobotAuto_FarRed extends LinearOpMode
             // If pixel is not in center position, rotate robot check if pixel is in left location.
             // The timer is to allow tensorflow to settle as we have noticed delays in the process
             if (position == RobotAuto_NearRed.pixelPosition.UNKNOWN) {
-                mecanumAuto.rotate(drivePower, -countsToRotateToPixel);
+                mecanumAuto.rotate(-autoDrivePower, -countsToRotateToPixel);
                 waitForMotionToComplete();
                 cameraTimer.reset();
                 while ((cameraTimer.milliseconds() < maxTimeToWait) && (position == RobotAuto_NearRed.pixelPosition.UNKNOWN)) {
@@ -130,7 +129,7 @@ public class RobotAuto_FarRed extends LinearOpMode
             // TODO: It rotates the robot back to the look center which should probably be moved to the dropLeftPixel method
             if (position == RobotAuto_NearRed.pixelPosition.UNKNOWN)
             {
-                mecanumAuto.rotate(drivePower, countsToRotateToPixel);
+                mecanumAuto.rotate(-autoDrivePower, countsToRotateToPixel);
                 waitForMotionToComplete();
                 position = RobotAuto_NearRed.pixelPosition.LEFT;
                 blinkin.setColor(RevBlinkinLedDriver.BlinkinPattern.WHITE);
@@ -142,15 +141,16 @@ public class RobotAuto_FarRed extends LinearOpMode
 
         // Sequence of events for dropping the pixel on the center tape and then parking
         public void dropCenterPixel() {
-            double drivePower = -0.2;               // Motor power
             int countsToDriveOneInch = -33;         // Approximate encoder counts to drive 1 inch
-            int driveDistanceToPixel = 8;           // Inches
-            int driveForwardsFromPixel = 25;        // Inches
+            int driveDistanceToPixel = 11;           // Inches
+            int driveForwardsFromPixel = 26;        // Inches
+            int strafeToPark = 122;
+            int backwardsToStrafe = -4;
+            int strafeToAvoidPixel = -15;
             int rotateToPark = 750;
-            int strafeToPark = 110;
 
-            // Drive forward from wall
-            mecanumAuto.drive(drivePower, driveDistanceToPixel * countsToDriveOneInch);
+            // Drive to tape
+            mecanumAuto.drive(-autoDrivePower, driveDistanceToPixel * countsToDriveOneInch);
             waitForMotionToComplete();
             sleep(autoStateDelay);
 
@@ -158,35 +158,44 @@ public class RobotAuto_FarRed extends LinearOpMode
             gripperArm.gripperOpen();
             sleep(autoStateDelay);
 
-            // Drive backwards to lay down pixel
-            mecanumAuto.drive(drivePower, driveForwardsFromPixel * countsToDriveOneInch);
-            waitForMotionToComplete();
-
-            // strafe to avoid bars
-            mecanumAuto.strafe(drivePower, strafeToPark * countsToDriveOneInch);
+            // Drive backwards to strafe
+            mecanumAuto.drive(-autoDrivePower, backwardsToStrafe * countsToDriveOneInch);
             waitForMotionToComplete();
             sleep(autoStateDelay);
 
-            // Rotate towards park position
-            mecanumAuto.rotate(drivePower,rotateToPark);
+            // Strafe to go around pixel
+            mecanumAuto.strafe(-autoDrivePower, strafeToAvoidPixel * countsToDriveOneInch);
+            waitForMotionToComplete();
+            sleep(autoStateDelay);
+
+            // Drive forward from pixel
+            mecanumAuto.drive(-autoDrivePower, driveForwardsFromPixel * countsToDriveOneInch);
+            waitForMotionToComplete();
+            sleep(autoStateDelay);
+
+            // strafe to avoid bars
+            mecanumAuto.strafe(-autoDrivePower, strafeToPark * countsToDriveOneInch);
+            waitForMotionToComplete();
+            sleep(autoStateDelay);
+
+            // Rotate to orient for teleop
+            mecanumAuto.rotate(-autoDrivePower,rotateToPark);
             waitForMotionToComplete();
             sleep(autoStateDelay);
         }
 
 
-
         // Sequence of events for dropping the pixel on the right-hand tape and then parking
         public void dropLeftPixel() {
-            double drivePower = 0.3;                // Motor power
             int countsToDriveOneInch = 33;          // Approximate encoder counts to drive 1 inch
             int strafeDistanceToTape = 13;          // Inches
-            int driveDistanceToStrafe = -31;        // Inches
-            int strafeToPark = -120;
+            int driveDistanceToStrafe = -33;        // Inches
+            int strafeToPark = -118;
             int rotateToPark = 750;                 // Inches
-            int rotateCorrect = -20;
+            int rotateCorrect = 30;
 
-            //Strafe
-            mecanumAuto.strafe(drivePower, strafeDistanceToTape * countsToDriveOneInch);
+            // Strafe to tape
+            mecanumAuto.strafe(autoDrivePower, strafeDistanceToTape * countsToDriveOneInch);
             waitForMotionToComplete();
             sleep(autoStateDelay);
 
@@ -195,22 +204,22 @@ public class RobotAuto_FarRed extends LinearOpMode
             sleep(autoStateDelay);
 
             // corrective rotation
-//            mecanumAuto.rotate(drivePower,rotateCorrect);
-//            waitForMotionToComplete();
-//            sleep(500);
-
-            // Drive backwards to lay down pixel
-            mecanumAuto.drive(drivePower, driveDistanceToStrafe * countsToDriveOneInch);
+            mecanumAuto.rotate(autoDrivePower,rotateCorrect);
             waitForMotionToComplete();
             sleep(autoStateDelay);
 
-            //strafe to park
-            mecanumAuto.strafe(drivePower, strafeToPark * countsToDriveOneInch);
+            // Drive forward to get past arena frame
+            mecanumAuto.drive(autoDrivePower, driveDistanceToStrafe * countsToDriveOneInch);
             waitForMotionToComplete();
             sleep(autoStateDelay);
 
-            // Rotate towards park position
-            mecanumAuto.rotate(drivePower,rotateToPark);
+            // Strafe to park
+            mecanumAuto.strafe(autoDrivePower, strafeToPark * countsToDriveOneInch);
+            waitForMotionToComplete();
+            sleep(autoStateDelay);
+
+            // Rotate to orient for teleop
+            mecanumAuto.rotate(autoDrivePower,rotateToPark);
             waitForMotionToComplete();
             sleep(autoStateDelay);
         }
@@ -218,7 +227,6 @@ public class RobotAuto_FarRed extends LinearOpMode
 
         // Sequence of events for dropping the pixel on the lefthand tape and then parking
         public void dropRightPixel() {
-            double drivePower = 0.2;                // Motor power
             int countsToDriveOneInch = 33;          // Approximate encoder counts to drive 1 inch
             int strafeToPark = -110;
             int rotateToPark = 750;                 // Inches
@@ -226,10 +234,10 @@ public class RobotAuto_FarRed extends LinearOpMode
             int driveToTape = -6;
             int driveDistanceToDropPixel = 6;       // Inches
             int countsToRotateToPark = 450;         // 450 is about 45 degrees
-            int driveDistanceToStrafe = -34;
+            int driveDistanceToStrafe = -36;
 
-            //Drive to tape
-            mecanumAuto.drive(drivePower, driveToTape * countsToDriveOneInch);
+            // Drive to tape
+            mecanumAuto.drive(autoDrivePower, driveToTape * countsToDriveOneInch);
             waitForMotionToComplete();
             sleep(autoStateDelay);
 
@@ -237,27 +245,28 @@ public class RobotAuto_FarRed extends LinearOpMode
             gripperArm.gripperOpen();
             sleep(autoStateDelay);
 
-            // Drive backwards to lay down pixel
-            mecanumAuto.drive(drivePower, driveDistanceToDropPixel * countsToDriveOneInch);
+            // Backup after pixel drop
+            mecanumAuto.drive(autoDrivePower, driveDistanceToDropPixel * countsToDriveOneInch);
             waitForMotionToComplete();
             sleep(autoStateDelay);
 
-            // Rotate toward pixel
-            mecanumAuto.rotate(drivePower, countsToRotateToPark);
+            // Rotate away from pixel
+            mecanumAuto.rotate(autoDrivePower, countsToRotateToPark);
             waitForMotionToComplete();
             sleep(autoStateDelay);
 
-            // Drive from pixel
-            mecanumAuto.drive(drivePower, driveDistanceToStrafe * countsToDriveOneInch);
+            // Drive forward to get past arena frame
+            mecanumAuto.drive(autoDrivePower, driveDistanceToStrafe * countsToDriveOneInch);
             waitForMotionToComplete();
+            sleep(autoStateDelay);
 
             //strafe to park
-            mecanumAuto.strafe(drivePower, strafeToPark * countsToDriveOneInch);
+            mecanumAuto.strafe(autoDrivePower, strafeToPark * countsToDriveOneInch);
             waitForMotionToComplete();
             sleep(autoStateDelay);
 
-            // Rotate towards park position
-            mecanumAuto.rotate(drivePower,rotateToPark);
+            // Rotate to orient for teleop
+            mecanumAuto.rotate(autoDrivePower,rotateToPark);
             waitForMotionToComplete();
             sleep(autoStateDelay);
         }
