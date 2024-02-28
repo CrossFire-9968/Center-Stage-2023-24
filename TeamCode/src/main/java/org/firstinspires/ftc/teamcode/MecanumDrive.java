@@ -24,15 +24,21 @@ public class MecanumDrive {
     public void init(HardwareMap hwMap){
         motor_LF = hwMap.get(DcMotor.class, "Motor_LF");
         motor_LF.setDirection(DcMotorSimple.Direction.FORWARD);
+        motor_LF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         motor_RF = hwMap.get(DcMotor.class, "Motor_RF");
         motor_RF.setDirection(DcMotorSimple.Direction.REVERSE);
+        motor_RF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
 
         motor_RR = hwMap.get(DcMotor.class, "Motor_RR");
         motor_RR.setDirection(DcMotorSimple.Direction.FORWARD);
+        motor_RR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
 
         motor_LR = hwMap.get(DcMotor.class, "Motor_LR");
         motor_LR.setDirection(DcMotorSimple.Direction.REVERSE);
+        motor_LR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         setAllMecanumPowers(0.0);
     }
@@ -65,14 +71,6 @@ public class MecanumDrive {
             }
             telemetry.addLine("Strafe by Buttons");
         }
-
-//
-//        if (gamepad.left_bumper) {
-//            strafeSpeed = -strafeMax;
-//        }
-//        else if (gamepad.right_bumper) {
-//            strafeSpeed = strafeMax;
-//        }
 
         // Raw drive power for each motor from joystick inputs
         LFrontPower = driveSpeed - turnSpeed - strafeSpeed;
