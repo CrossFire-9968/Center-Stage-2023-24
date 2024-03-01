@@ -142,8 +142,8 @@ public class RobotAuto_NearBlue extends LinearOpMode
    // Sequence of events for dropping the pixel on the center tape and then parking
    public void dropCenterPixel() {
       int countsToDriveOneInch = -33;        // Approximate encoder counts to drive 1 inch
-      int driveDistanceFromWall = 10;        // Inches
-      int driveBackwardsToWall = -26;        // Inches
+      int driveDistanceFromWall = 11;        // Inches
+      int driveBackwardsToWall = -26   ;        // Inches
       int rotateToPark = -750;
       int strafeToPark = -50;
 
@@ -177,8 +177,8 @@ public class RobotAuto_NearBlue extends LinearOpMode
    // Sequence of events for dropping the pixel on the righthand tape and then parking
    public void dropRightPixel() {
       int countsToDriveOneInch = 33;         // Approximate encoder counts to drive 1 inch
-      int driveDistanceToTape = -6;          // Inches
-      int driveDistanceToDropPixel = 27;     // Inches
+      int driveDistanceToTape = -7;          // Inches
+      int driveDistanceToDropPixel = 28;     // Inches
       int countsToRotateToPark = -350;       // 450 is about 45 degrees
       int driveDistanceToPark = 22;          // Inches
 
@@ -209,7 +209,7 @@ public class RobotAuto_NearBlue extends LinearOpMode
    // Sequence of events for dropping the pixel on the lefthand tape and then parking
    public void dropLeftPixel() {
       int countsToDriveOneInch = 33;         // Approximate encoder counts to drive 1 inch
-      int strafeDistanceToTape = 12;         // Inches
+      int strafeDistanceToTape = 13;         // Inches
       int driveDistanceToDropPixel = 13;     // Inches
       int countsToRotateToPark = -780;       // 450 is about 45 degrees
       int driveDistanceToPark = 22;          // Inches
