@@ -16,7 +16,7 @@ public class RobotAuto_NearBlue extends LinearOpMode
    public PixelDetect pixelDetect = new PixelDetect();
    private ElapsedTime cameraTimer = new ElapsedTime();
    private long autoStateDelay = 300;
-   private double autoDrivePower = 0.2;
+   private double autoDrivePower = 0.3;
 
    enum pixelPosition {
       UNKNOWN, LEFT, CENTER, RIGHT
